@@ -1,0 +1,15 @@
+{
+  "name": "Plot Twist",
+  "short_name": "Plot Twist",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fffcf5",
+  "theme_color": "#1b3c4b",
+  "icons": [
+    {
+      "src": "app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
