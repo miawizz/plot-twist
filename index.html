@@ -50,7 +50,7 @@
 <body>
   <div class="container">
     <header>
-      <img src="assets/plot-twist-logo.png" alt="Plot Twist logo" class="logo" onerror="this.style.display='none'" />
+      <img src="plot-twist-logo.png" alt="Plot Twist logo" class="logo" />
     </header>
 
     <div class="instructions">
@@ -62,89 +62,48 @@
         <li>Or try saying "Popcorn!" and pointing to whoever's turn it is next to "pop" the story over to them.</li>
         <li>If playing with more than two people, establish the order before you start playing.</li>
       </ul>
-      <p>Whenever you need a little creative inspiration to move the story along or just want to shake things up, say "Plot Twist!" and tap the button for an idea! You can tap as many times as you want. For a fun challenge, do your best to stick with whatever idea is given to you and find a creative way to work it into the story — even if it doesn't seem to make sense at first. Happy storytelling!</p>
-    </div>
-
-    <div class="grid">
-      <section class="card" aria-labelledby="titleHeading">
-        <h2 id="titleHeading">Story title</h2>
-        <div class="out" id="titleOut" aria-live="polite">Tap Generate title</div>
-        <div class="btns" style="margin-top:10px">
-          <button id="btnTitle">Generate title</button>
-          <button class="secondary" id="btnReset">Reset</button>
-        </div>
-        <p class="muted">Here's a title suggestion to inspire the beginning of your story! Need a way to start? Try "Once Upon a Time..." or "Long ago and far away, there lived a..." — can't go wrong with the classics!</p>
-      </section>
-
-      <section class="card" aria-labelledby="twistHeading">
-        <h2 id="twistHeading">Plot twist generator</h2>
-        <div class="out" id="twistOut" aria-live="polite">Tap Plot twist for a new idea</div>
-        <div class="btns" style="margin-top:10px">
-          <button id="btnTwist">Plot twist</button>
-        </div>
-        <p class="muted">Tap the Plot Twist button any time you want some inspiration!</p>
-      </section>
-
-      <section class="card" aria-labelledby="wrapHeading">
-        <h2 id="wrapHeading">Wrap it up generator</h2>
-        <div class="out" id="wrapOut" aria-live="polite">Tap Wrap up for a gentle ending idea</div>
-        <div class="btns" style="margin-top:10px">
-          <button class="secondary" id="btnWrap">Wrap up</button>
-        </div>
-        <p class="muted">Need a little nudge for how to wrap up? Tap for a general idea and find a way to end the story together!</p>
-      </section>
+      <p>Whenever you need a little creative inspiration to move the story along or just want to shake things up,<br><br>
+      say "Plot Twist!" and tap the button for an idea!<br><br>
+      You can tap as many times as you want.<br><br>
+      For a fun challenge, do your best to stick with whatever idea is given to you and find a creative way to work it into the story — even if it doesn't seem to make sense at first.<br><br>
+      Happy storytelling!</p>
     </div>
 
     <section class="card" aria-labelledby="recHeading" style="margin-top:16px">
-      <h2 id="recHeading">Optional recording panel</h2>
-      <div class="out" id="recStatus" aria-live="polite">Want to record your story as you tell it to listen back? Tap Start to allow microphone access. Audio stays on your device. You can listen back and save it if you like, or skip altogether!</div>
+      <h2 id="recHeading">Record Your Story!</h2>
+      <div class="out" id="recStatus" aria-live="polite">Ready to record. Your audio stays on your device</div>
       <div class="btns" style="margin-top:10px">
         <button id="btnRecStart">Start recording</button>
         <button class="secondary" id="btnRecStop" disabled>Stop</button>
         <button class="secondary" id="btnRecPlay" disabled>Play</button>
         <button class="secondary" id="btnRecDownload" disabled>Download</button>
       </div>
+      <p class="muted">Want to record your story as you tell it to listen back? Tap here to access your microphone — don't worry, this is only on your device. You can listen back and save it if you like, or skip altogether!</p>
       <audio id="player" controls style="width:100%; margin-top:10px; display:none"></audio>
     </section>
-  </div>
 
-  <script>
-    const TITLES=["The Worm Who Wanted to Go to Outer Space","Larry the Llama and the Mystery of the Missing Socks","The Day It Rained Noodles"];
-    const TWISTS=["Suddenly, a mysterious map floated down from the sky.","Just then, a raccoon in a tiny tuxedo burst through the door yelling, ‘I object!’","The floor turned into jelly"];
-    const WRAP_HINTS=["End the story with something happy","Finish by solving the main problem","Have the characters feel safe again","Let everyone get what they were hoping for","Show how things have changed since the beginning","End with the characters making a plan for next time","Wrap it up with a feeling. excitement, relief, joy, or calm","Leave the story open so it could continue later","End in the same place or situation where it began","Give the final line to the main character"];
+    <div class="grid">
+      <section class="card" aria-labelledby="titleHeading">
+        <h2 id="titleHeading">STORY TITLE...</h2>
+        <div class="out" id="titleOut" aria-live="polite">Tap GET A TITLE!</div>
+        <div class="btns" style="margin-top:10px">
+          <button id="btnTitle">GET A TITLE!</button>
+          <button class="secondary" id="btnReset">Reset</button>
+        </div>
+        <p class="muted">Here's a title suggestion to inspire the beginning of your story! Need a way to start? Try "Once Upon a Time..." or "Long ago and far away, there lived a..." — can't go wrong with the classics!</p>
+      </section>
 
-    const titleOut=document.getElementById('titleOut');
-    const twistOut=document.getElementById('twistOut');
-    const wrapOut=document.getElementById('wrapOut');
-    const btnTitle=document.getElementById('btnTitle');
-    const btnTwist=document.getElementById('btnTwist');
-    const btnWrap=document.getElementById('btnWrap');
-    const btnReset=document.getElementById('btnReset');
-    const recStart=document.getElementById('btnRecStart');
-    const recStop=document.getElementById('btnRecStop');
-    const recPlay=document.getElementById('btnRecPlay');
-    const recDl=document.getElementById('btnRecDownload');
-    const recStatus=document.getElementById('recStatus');
-    const player=document.getElementById('player');
+      <section class="card" aria-labelledby="twistHeading">
+        <h2 id="twistHeading">READY FOR A PLOT TWIST..?</h2>
+        <div class="out" id="twistOut" aria-live="polite">Tap PLOT TWIST! for a new idea</div>
+        <div class="btns" style="margin-top:10px">
+          <button id="btnTwist">PLOT TWIST!</button>
+        </div>
+        <p class="muted">Tap the Plot Twist button any time you want some inspiration!</p>
+      </section>
 
-    const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
-    let mediaRecorder=null,chunks=[],mediaStream=null,recordedBlob=null;
-
-    btnTitle.addEventListener('click',()=>{titleOut.textContent=pick(TITLES)||'A brand new story';twistOut.textContent='Tap Plot twist for a new idea';wrapOut.textContent='Tap Wrap up for a gentle ending idea';});
-    btnTwist.addEventListener('click',()=>{twistOut.textContent=pick(TWISTS)||'Something unexpected happened';});
-    btnWrap.addEventListener('click',()=>{wrapOut.textContent=pick(WRAP_HINTS)||'Finish in a simple, happy way';});
-    btnReset.addEventListener('click',()=>{titleOut.textContent='Tap Generate title';twistOut.textContent='Tap Plot twist for a new idea';wrapOut.textContent='Tap Wrap up for a gentle ending idea';});
-
-    function supportedMime(){const c=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/mpeg','audio/ogg'];for(const t of c){if(window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))return t;}return'';}
-    async function startRecording(){if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){recStatus.textContent='Microphone not available in this browser';return;}try{mediaStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true},video:false});const mimeType=supportedMime();mediaRecorder=new MediaRecorder(mediaStream,mimeType?{mimeType}:undefined);chunks=[];mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};mediaRecorder.onstop=()=>{recordedBlob=new Blob(chunks,{type:mediaRecorder.mimeType||'audio/webm'});const url=URL.createObjectURL(recordedBlob);player.src=url;player.style.display='block';recPlay.disabled=false;recDl.disabled=false;recStatus.textContent='Recording ready to play or download';if(mediaStream){mediaStream.getTracks().forEach(t=>t.stop());mediaStream=null;}};mediaRecorder.start();recStatus.textContent='Recording. Keep telling your story';recStart.disabled=true;recStop.disabled=false;recPlay.disabled=true;recDl.disabled=true;}catch(err){recStatus.textContent='Microphone permission blocked. Enable in browser settings';}}
-    function stopRecording(){if(mediaRecorder&&mediaRecorder.state!=='inactive'){mediaRecorder.stop();}recStart.disabled=false;recStop.disabled=true;}
-    function playRecording(){if(player.src){player.play();}}
-    function downloadRecording(){if(!recordedBlob)return;const a=document.createElement('a');const ext=(recordedBlob.type.includes('mp4')?'m4a':recordedBlob.type.includes('webm')?'webm':'audio');a.href=player.src;a.download=`plot-twist-story.${ext}`;document.body.appendChild(a);a.click();a.remove();}
-
-    recStart.addEventListener('click',startRecording);
-    recStop.addEventListener('click',stopRecording);
-    recPlay.addEventListener('click',playRecording);
-    recDl.addEventListener('click',downloadRecording);
-  </script>
-</body>
-</html>
+      <section class="card" aria-labelledby="wrapHeading">
+        <h2 id="wrapHeading">READY TO WRAP IT UP...?</h2>
+        <div class="out" id="wrapOut" aria-live="polite">Tap IDEAS FOR HOW TO END... for a gentle ending idea</div>
+        <div class="btns" style="margin-top:10px">
+          <button class="secondary" id="btnWrap">ID
