@@ -27,128 +27,92 @@
       font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: var(--bg);
       color: var(--ink);
+      line-height: 1.5;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      line-height: 1.5;
     }
-    .container { max-width: 940px; margin: 0 auto; padding: 20px 16px 80px; }
-    header {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-      margin: 16px 0 20px;
-    }
+    .container { max-width: 960px; margin: 0 auto; padding: 20px 16px 64px; }
+    header { display: grid; gap: 8px; justify-items: start; margin: 8px 0 16px; }
+    .logo { height: 56px; width: auto; }
     .app-title { font-weight: 700; letter-spacing: .2px; font-size: clamp(22px, 4vw, 34px); color: var(--brand-dark); }
     .subtitle { color: var(--muted); font-size: 14px; }
-    .row { display: grid; gap: 16px; }
-    @media (min-width: 900px){ .row { grid-template-columns: 1.3fr .9fr; align-items: start; } }
+
+    .grid { display: grid; gap: 16px; }
+    @media (min-width: 860px){ .grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 1100px){ .grid { grid-template-columns: 1fr 1fr 1fr; } }
 
     .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
-    .card h2 { margin: 0 0 8px; font-size: 16px; color: var(--brand-dark); letter-spacing: .2px; }
-    .card p { margin: 0; }
+    .card h2 { margin: 0 0 10px; font-size: 16px; color: var(--brand-dark); }
 
-    .out { background: #fff; border: 2px dashed #d7e3e8; border-radius: var(--radius); padding: 14px; min-height: 56px; display: flex; align-items: center; font-weight: 600; }
+    .out { background: #fff; border: 2px dashed #d7e3e8; border-radius: var(--radius); padding: 14px; min-height: 60px; display: flex; align-items: center; font-weight: 600; }
 
-    .story {
-      min-height: 160px; border-radius: var(--radius); background: #fff; padding: 16px; box-shadow: inset 0 0 0 2px #e6eef2;
-      font-size: 18px; line-height: 1.65; white-space: pre-wrap;
-    }
-
-    .btns { display: flex; flex-wrap: wrap; gap: 10px; }
-    button {
-      appearance: none; border: 0; padding: 12px 14px; border-radius: 14px; font-weight: 700; cursor: pointer;
-      background: var(--brand); color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.08); letter-spacing: .2px;
-      transition: transform .05s ease-in-out, filter .2s;
-    }
-    button:active { transform: translateY(1px); }
+    .btns { display: flex; gap: 10px; flex-wrap: wrap; }
+    button { appearance: none; border: 0; padding: 12px 14px; border-radius: 14px; font-weight: 700; cursor: pointer; background: var(--brand); color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.08); letter-spacing: .2px; }
     button.secondary { background: #edf6f9; color: var(--brand-dark); font-weight: 600; }
     button.ghost { background: transparent; color: var(--brand-dark); border: 2px solid #d7e3e8; }
 
-    .tag { display: inline-flex; align-items: center; gap: 8px; background: #edf6f9; color: var(--brand-dark); padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
-    .tips { display: grid; gap: 8px; }
-    .tip { background: #fff; border-left: 4px solid var(--accent); border-radius: 12px; padding: 10px 12px; box-shadow: var(--shadow); font-size: 14px; }
-
-    .muted { color: var(--muted); }
-    .spacer { height: 8px; }
-
-    .pillbar { display: flex; gap: 10px; flex-wrap: wrap; }
-
-    .wrapup-list { display: grid; gap: 8px; }
-    .wrapup-list li { background: #fff; padding: 10px 12px; border-radius: 12px; box-shadow: var(--shadow); list-style: none; font-size: 14px; }
-
-    .sr { position: absolute; left: -9999px; }
-    .grow { font-size: 20px; }
+    .muted { color: var(--muted); font-size: 13px; }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <div>
-        <div class="app-title">Plot Twist</div>
-        <div class="subtitle">Build a story with a title, add twists, and pick a simple wrap up when you are ready</div>
-      </div>
-      <div class="pillbar">
-        <span class="tag" id="saveStatus" aria-live="polite">Autosave on</span>
-        <button class="ghost" id="bigTextBtn" aria-pressed="false">Toggle large text</button>
-      </div>
+      <!-- Update the src to your GitHub path, e.g., ./assets/plot-twist-logo.png -->
+      <img src="./plot-twist-logo.png" alt="Plot Twist logo" class="logo" />
+      <div class="app-title">Plot Twist</div>
+      <div class="subtitle">Generate a title, add a twist, and choose a simple wrap up. Tell it out loud</div>
     </header>
 
-    <div class="row">
-      <!-- Left column: Generator and Story -->
-      <section class="card" aria-labelledby="genHeading">
-        <h2 id="genHeading">Story workspace</h2>
-        <div class="out" id="titleOut" aria-live="polite">Tap Generate Title</div>
-        <div class="spacer"></div>
-        <div class="story" id="storyOut" aria-live="polite">Once upon a time, </div>
-        <div class="spacer"></div>
-        <div class="btns">
+    <div class="grid">
+      <!-- Title card -->
+      <section class="card" aria-labelledby="titleHeading">
+        <h2 id="titleHeading">Story title</h2>
+        <div class="out" id="titleOut" aria-live="polite">Tap Generate title</div>
+        <div class="btns" style="margin-top:10px">
           <button id="btnTitle">Generate title</button>
-          <button id="btnTwist">Plot twist</button>
-          <button class="secondary" id="btnWrap">Insert wrap up hint</button>
-          <button class="secondary" id="btnCopy">Copy story</button>
           <button class="ghost" id="btnReset">Reset</button>
         </div>
-        <p class="muted" style="margin-top:10px">Tip. Tap Plot twist whenever you want a new idea. Use Insert wrap up hint to nudge the story toward a finish</p>
+        <p class="muted" style="margin-top:8px">When you tap Generate title, start your telling with “Once upon a time…” and let kids fill in the blanks</p>
       </section>
 
-      <!-- Right column: Tips and Wrap-ups -->
-      <aside class="card" aria-labelledby="tipsHeading">
-        <h2 id="tipsHeading">Simple wrap up ideas</h2>
-        <p class="muted" style="margin-bottom:10px">Pick one to guide your ending. No right way to finish</p>
-        <ul class="wrapup-list" id="wrapList">
-          <li>End the story with something happy</li>
-          <li>Finish by solving the main problem</li>
-          <li>Have the characters feel safe again</li>
-          <li>Let everyone get what they were hoping for</li>
-          <li>Show how things have changed since the beginning</li>
-          <li>End with the characters making a plan for next time</li>
-          <li>Wrap it up with a feeling. excitement, relief, joy, or calm</li>
-          <li>Leave the story open so it could continue later</li>
-          <li>End in the same place or situation where it began</li>
-          <li>Give the final line to the main character</li>
-        </ul>
-        <div class="spacer"></div>
-        <div class="tips">
-          <div class="tip">Keep it moving. Short sentences help the story flow</div>
-          <div class="tip">If stuck, repeat the last line with a tiny change</div>
-          <div class="tip">Let kids lead the choices. Grown ups can nudge</div>
-        </div>
-      </aside>
-    </div>
+      <!-- Opener card -->
+      <section class="card" aria-labelledby="openerHeading">
+        <h2 id="openerHeading">Story opener</h2>
+        <div class="out" id="openerOut" aria-live="polite">Once upon a time...</div>
+        <p class="muted" style="margin-top:8px">Keep this as your first line. Everything else can change</p>
+      </section>
 
-    <!-- Hidden data and template -->
-    <template id="wrapHintTpl">[Wrap up hint inserted]</template>
+      <!-- Plot twist card -->
+      <section class="card" aria-labelledby="twistHeading">
+        <h2 id="twistHeading">Plot twist</h2>
+        <div class="out" id="twistOut" aria-live="polite">Tap Plot twist for a new idea</div>
+        <div class="btns" style="margin-top:10px">
+          <button id="btnTwist">Plot twist</button>
+        </div>
+        <p class="muted" style="margin-top:8px">Each tap replaces the twist so you can keep the story tidy</p>
+      </section>
+
+      <!-- Wrap-up idea card -->
+      <section class="card" aria-labelledby="wrapHeading">
+        <h2 id="wrapHeading">Simple wrap up idea</h2>
+        <div class="out" id="wrapOut" aria-live="polite">Tap Wrap up for a gentle ending idea</div>
+        <div class="btns" style="margin-top:10px">
+          <button class="secondary" id="btnWrap">Wrap up</button>
+        </div>
+        <p class="muted" style="margin-top:8px">Ultra broad and flexible. Use only when you are ready to land the story</p>
+      </section>
+    </div>
   </div>
 
   <script>
-    // Data placeholders. Replace with your real arrays
+    // Replace with your real arrays
     const TITLES = [
-      // paste your real titles here as strings
       "The Worm Who Wanted to Go to Outer Space",
       "Larry the Llama and the Mystery of the Missing Socks",
       "The Day It Rained Noodles"
     ];
 
     const TWISTS = [
-      // paste your real twists here as strings
       "Suddenly, a mysterious map floated down from the sky.",
       "Just then, a raccoon in a tiny tuxedo burst through the door yelling, ‘I object!’",
       "The floor turned into jelly"
@@ -169,101 +133,43 @@
 
     // Elements
     const titleOut = document.getElementById('titleOut');
-    const storyOut = document.getElementById('storyOut');
+    const openerOut = document.getElementById('openerOut');
+    const twistOut  = document.getElementById('twistOut');
+    const wrapOut   = document.getElementById('wrapOut');
+
     const btnTitle = document.getElementById('btnTitle');
     const btnTwist = document.getElementById('btnTwist');
     const btnWrap  = document.getElementById('btnWrap');
-    const btnCopy  = document.getElementById('btnCopy');
     const btnReset = document.getElementById('btnReset');
-    const bigTextBtn = document.getElementById('bigTextBtn');
-    const saveStatus = document.getElementById('saveStatus');
 
-    // Utilities
     const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-
-    // State
-    const KEY = 'plotTwist.v1';
-    let state = { title: '', story: 'Once upon a time, ' };
-
-    function render(){
-      titleOut.textContent = state.title || 'Tap Generate Title';
-      storyOut.textContent = state.story;
-    }
-
-    function save(){
-      localStorage.setItem(KEY, JSON.stringify(state));
-      saveStatus.textContent = 'Saved';
-      setTimeout(()=> saveStatus.textContent = 'Autosave on', 1100);
-    }
-
-    function load(){
-      try {
-        const raw = localStorage.getItem(KEY);
-        if(raw){ state = JSON.parse(raw); }
-      } catch(e) { /* ignore */ }
-      render();
-    }
 
     // Actions
     btnTitle.addEventListener('click', () => {
       const t = pick(TITLES) || 'A brand new story';
-      state.title = t;
-      // If starting fresh, ensure opener
-      if(!state.story || !state.story.startsWith('Once upon a time')){
-        state.story = 'Once upon a time, ';
-      }
-      state.story = `Once upon a time, ${t}.`;
-      render();
-      save();
+      titleOut.textContent = t;
+      openerOut.textContent = 'Once upon a time...';
+      // Clear twist and wrap on new title
+      twistOut.textContent = 'Tap Plot twist for a new idea';
+      wrapOut.textContent  = 'Tap Wrap up for a gentle ending idea';
     });
 
     btnTwist.addEventListener('click', () => {
       const twist = pick(TWISTS) || 'Something unexpected happened';
-      const sep = state.story.endsWith('\n') ? '' : '\n';
-      state.story += `${sep}${twist}`;
-      render();
-      save();
+      twistOut.textContent = twist;
     });
 
     btnWrap.addEventListener('click', () => {
-      const hint = pick(WRAP_HINTS);
-      const sep = state.story.endsWith('\n') ? '' : '\n';
-      state.story += `${sep}[Wrap up idea] ${hint}.`;
-      render();
-      save();
-    });
-
-    btnCopy.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(`# ${state.title}\n\n${state.story}`);
-        saveStatus.textContent = 'Copied';
-        setTimeout(()=> saveStatus.textContent = 'Autosave on', 1100);
-      } catch(e) {
-        // Fallback
-        const ta = document.createElement('textarea');
-        ta.value = `# ${state.title}\n\n${state.story}`;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        ta.remove();
-        saveStatus.textContent = 'Copied';
-        setTimeout(()=> saveStatus.textContent = 'Autosave on', 1100);
-      }
+      const hint = pick(WRAP_HINTS) || 'Finish in a simple, happy way';
+      wrapOut.textContent = hint + (hint.endsWith('.') ? '' : '');
     });
 
     btnReset.addEventListener('click', () => {
-      state = { title: '', story: 'Once upon a time, ' };
-      render();
-      save();
+      titleOut.textContent = 'Tap Generate title';
+      openerOut.textContent = 'Once upon a time...';
+      twistOut.textContent = 'Tap Plot twist for a new idea';
+      wrapOut.textContent = 'Tap Wrap up for a gentle ending idea';
     });
-
-    bigTextBtn.addEventListener('click', () => {
-      const on = storyOut.classList.toggle('grow');
-      bigTextBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-
-    // Init
-    load();
   </script>
 </body>
 </html>
