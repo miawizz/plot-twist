@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#1b3c4b" />
   <link rel="manifest" href="manifest-v2.json">
 
+  <!-- Social share preview -->
   <meta property="og:image" content="https://miawizz.github.io/plot-twist/plot-twist-logo.png" />
   <meta property="og:image:type" content="image/png" />
   <meta property="og:image:width" content="1200" />
@@ -17,55 +18,58 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
 :root {
   --bg: #fdf3de; /* light cream background */
-  --ink: #213547; /* keep dark ink for text contrast */
-  --brand: #eb6e52; /* coral from logo */
+  --ink: #213547; /* dark text */
+  --brand: #eb6e52; /* coral button color */
   --brand-dark: #ea694d; /* deeper coral */
-  --muted: #5a6b75; /* keeping as-is for readability */
-  --card: #ffffff; /* white cards for content */
-  --accent: #fef7e3; /* soft accent cream */
+  --muted: #5a6b75;
+  --card: #ffffff;
+  --accent: #fef7e3;
   --radius: 18px;
   --shadow: 0 6px 24px rgba(0,0,0,.08);
 }
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    .container { max-width: 960px; margin: 0 auto; padding: 20px 16px 64px; }
-    header { display: grid; gap: 8px; justify-items: center; margin: 8px 0 16px; text-align: center; }
-    .logo { height: 70px; width: auto; }
-    .instructions { background: var(--card); padding: 18px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: left; }
-    .instructions h2 { margin-top: 0; color: var(--brand-dark); }
-    .grid { display: grid; gap: 16px; margin-top: 20px; }
-    @media (min-width: 860px){ .grid { grid-template-columns: 1fr 1fr; } }
-    @media (min-width: 1100px){ .grid { grid-template-columns: 1fr 1fr 1fr; } }
-    .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
-    .card h2 { margin: 0 0 10px; font-size: 16px; color: var(--brand-dark); }
-    .out { background: #fff; border: 2px dashed #d7e3e8; border-radius: var(--radius); padding: 14px; min-height: 60px; display: flex; align-items: center; font-weight: 600; }
-    .btns { display: flex; gap: 10px; flex-wrap: wrap; }
-    button { appearance: none; border: 0; padding: 12px 14px; border-radius: 14px; font-weight: 700; cursor: pointer; background: var(--brand); color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.08); letter-spacing: .2px; }
-    button.secondary { background: #edf6f9; color: var(--brand-dark); font-weight: 600; }
-    .muted { color: var(--muted); font-size: 13px; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.container { max-width: 960px; margin: 0 auto; padding: 20px 16px 64px; }
+header { display: grid; gap: 8px; justify-items: center; margin: 8px 0 16px; text-align: center; }
+.logo { height: 70px; width: auto; }
+.instructions { background: var(--card); padding: 18px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: left; }
+.instructions h2 { margin-top: 0; color: var(--brand-dark); }
+.grid { display: grid; gap: 16px; margin-top: 20px; }
+@media (min-width: 860px){ .grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1100px){ .grid { grid-template-columns: 1fr 1fr 1fr; } }
+.card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+.card h2 { margin: 0 0 10px; font-size: 16px; color: var(--brand-dark); }
+.out { background: #fff; border: 2px dashed #d7e3e8; border-radius: var(--radius); padding: 14px; min-height: 60px; display: flex; align-items: center; font-weight: 600; }
+.btns { display: flex; gap: 10px; flex-wrap: wrap; }
+button { appearance: none; border: 0; padding: 12px 14px; border-radius: 14px; font-weight: 700; cursor: pointer; background: var(--brand); color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.08); letter-spacing: .2px; }
+button.secondary { background: #edf6f9; color: var(--brand-dark); font-weight: 600; }
+.muted { color: var(--muted); font-size: 13px; }
+footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; padding: 0 16px; }
   </style>
 </head>
 <body>
-  <!-- Simple password prompt gate -->
+  <!-- Password gate (case-insensitive) -->
   <script>
-    const correctPassword = "pt"; 
+    const correctPassword = "pt";
     if (!sessionStorage.getItem("plotTwistAccess")) {
       const entered = prompt(
         "Private access — this app is only for those who have purchased from Playful Heart Parenting.\nPlease enter the password (hint: it's in your receipt)"
       );
-      if (entered !== correctPassword) {
+      const ok = (entered || "").trim().toLowerCase() === correctPassword.toLowerCase();
+      if (!ok) {
         alert("Incorrect password. Access denied.");
         window.location.href = "about:blank";
       } else {
@@ -76,7 +80,6 @@
 
   <div class="container">
     <header>
-      <!-- Update path if needed -->
       <img src="plot-twist-logo.png" alt="Plot Twist logo" class="logo" />
     </header>
 
@@ -140,7 +143,7 @@
     </div>
   </div>
 
-  <footer style="text-align:center; font-size:12px; color:#666; margin-top:40px;">
+  <footer>
     © 2025 Mia Wisinski, Playful Heart Parenting. This app is for personal use only by those who have purchased access from Playful Heart Parenting. Please do not share this link publicly or distribute without explicit permission.
   </footer>
 
@@ -356,67 +359,96 @@ btnReset.addEventListener('click',()=>{
 });
 
 /* ===================
-   Recorder
+   Recorder (with correct file type per browser)
 =================== */
-let mediaRecorder=null,chunks=[],mediaStream=null,recordedBlob=null;
 
-function supportedMime(){
-  const c=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/mpeg','audio/ogg'];
-  for(const t of c){ if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) return t; }
-  return '';
+// Choose the best recording MIME type for this browser
+function pickSupportedMime() {
+  const candidates = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4;codecs=aac",
+    "audio/mp4",
+    "audio/mpeg" // rarely supported
+  ];
+  for (const t of candidates) {
+    if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) return t;
+  }
+  return "";
 }
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+// Map MIME type to the right file extension
+function extFromMime(m) {
+  if (!m) return "webm";
+  m = m.toLowerCase();
+  if (m.includes("webm")) return "webm";
+  if (m.includes("mp4"))  return "m4a"; // audio/mp4 -> .m4a
+  if (m.includes("mpeg")) return "mp3";
+  if (m.includes("ogg"))  return "ogg";
+  return "audio";
+}
+
+let mediaRecorder=null, chunks=[], mediaStream=null, recordedBlob=null;
 
 async function startRecording(){
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
     recStatus.textContent='Microphone not available in this browser';
     return;
   }
   try{
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true }, video:false });
-    const mimeType = supportedMime();
-    mediaRecorder = new MediaRecorder(mediaStream, mimeType ? { mimeType } : undefined);
-    chunks=[];
+
+    const chosenMime = pickSupportedMime();
+    mediaRecorder = new MediaRecorder(mediaStream, chosenMime ? { mimeType: chosenMime } : undefined);
+
+    chunks = [];
     mediaRecorder.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
     mediaRecorder.onstop = () => {
-      recordedBlob = new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      const finalType = mediaRecorder.mimeType || chosenMime || "audio/webm";
+      recordedBlob = new Blob(chunks, { type: finalType });
+
       const url = URL.createObjectURL(recordedBlob);
       player.src = url;
       player.style.display = 'block';
       recPlay.disabled = false;
       recDl.disabled = false;
       recStatus.textContent = 'Recording ready to play or download';
-      if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream = null; }
+
+      if (mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream = null; }
     };
+
     mediaRecorder.start();
     recStatus.textContent = 'Recording. Keep telling your story';
     recStart.disabled = true;
     recStop.disabled  = false;
     recPlay.disabled  = true;
     recDl.disabled    = true;
+
   }catch(err){
     recStatus.textContent = 'Microphone permission blocked. Enable in browser settings';
   }
 }
+
 function stopRecording(){
   if(mediaRecorder && mediaRecorder.state!=='inactive'){ mediaRecorder.stop(); }
   recStart.disabled = false;
   recStop.disabled  = true;
 }
+
 function playRecording(){ if(player.src){ player.play(); } }
+
 function downloadRecording(){
   if(!recordedBlob) return;
-  // Prefer m4a on Safari for better compatibility
-  let ext = 'webm';
-  if ((recordedBlob.type && recordedBlob.type.includes('mp4')) || isSafari) ext = 'm4a';
+  const ext = extFromMime(recordedBlob.type);
   const a = document.createElement('a');
   a.href = player.src;
-  a.download = `plot-twist-story.${ext}`;
+  a.download = `plot-twist-story.${ext}`; // correct single extension
   document.body.appendChild(a);
   a.click();
   a.remove();
 }
 
+/* Buttons */
 recStart.addEventListener('click', startRecording);
 recStop.addEventListener('click',  stopRecording);
 recPlay.addEventListener('click',  playRecording);
