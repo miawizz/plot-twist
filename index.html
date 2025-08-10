@@ -164,7 +164,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
     © 2025 Mia Wisinski, Playful Heart Parenting. This app is for personal use only by those who have purchased access from Playful Heart Parenting. Please do not share this link publicly or distribute without explicit permission.
   </footer>
 
-  <!-- We will lazy-load ffmpeg.wasm AFTER recording stops -->
+  <!-- We lazy-load ffmpeg.wasm AFTER recording stops -->
   <script>
 /* ===================
    Password overlay (case-insensitive)
@@ -453,10 +453,19 @@ async function loadScriptOnce(src) {
 async function ensureFFmpeg() {
   if (ffmpeg) return ffmpeg;
   mp3Note.style.display='block';
+  // 1) Load wrapper
   await loadScriptOnce('https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/ffmpeg.min.js');
-  if (!window.FFmpeg) throw new Error('FFmpeg not available');
+  if (!window.FFmpeg) throw new Error('FFmpeg wrapper not available');
+  // 2) Create instance and point to core files on CDN
   const { createFFmpeg } = window.FFmpeg;
-  ffmpeg = createFFmpeg({ log: false });
+  ffmpeg = createFFmpeg({
+    log: true,
+    corePath: 'https://unpkg.com/@ffmpeg/core@0.12.7/dist/ffmpeg-core.js',
+    progress: ({ ratio }) => { 
+      recStatus.textContent = `Converting to MP3… ${Math.round((ratio||0) * 100)}%`; 
+    }
+  });
+  // 3) Load core (.js + .wasm)
   await ffmpeg.load();
   return ffmpeg;
 }
