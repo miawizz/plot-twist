@@ -61,7 +61,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
 
 /* Password overlay */
 #gateOverlay {
-  position: fixed; inset: 0; background: rgba(253,243,222,0.95);
+  position: fixed; inset: 0; background: rgba(253,243,222,0.97);
   backdrop-filter: blur(2px);
   display: grid; place-items: center;
   z-index: 9999; opacity: 1; transition: opacity .35s ease;
@@ -82,14 +82,13 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
   </style>
 </head>
 <body>
-  <!-- Password overlay (case-insensitive) -->
+  <!-- Password overlay (case-insensitive, no hint) -->
   <section id="gateOverlay" role="dialog" aria-labelledby="gateTitle" aria-modal="true">
     <div id="gateCard">
       <h2 id="gateTitle">Private access</h2>
-      <p>This app is only for those who have purchased from <strong>Playful Heart Parenting</strong>. Please enter the password.</p>
-      <p><em>Hint: it’s in your receipt email after purchase.</em></p>
+      <p>This app is only for those who have purchased from <strong>Playful Heart Parenting</strong>. Please enter the password from your receipt.</p>
       <form id="gateForm">
-        <input id="gateInput" type="password" autocomplete="current-password" placeholder="Enter password (e.g., pt)" />
+        <input id="gateInput" type="password" autocomplete="current-password" placeholder="Enter password" />
         <button id="gateEnter" type="submit">Enter</button>
       </form>
       <div id="gateMsg" aria-live="polite"></div>
@@ -126,7 +125,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
         <button class="secondary" id="btnRecPlay" disabled>Play</button>
         <button class="secondary" id="btnRecDownload" disabled>Download MP3</button>
       </div>
-      <p class="muted" id="mp3Note" style="display:none;">Preparing MP3… first time may take a moment.</p>
+      <p class="muted" id="mp3Note" style="display:none;">Converting to MP3… first time may take a moment.</p>
       <audio id="player" controls style="width:100%; margin-top:10px; display:none"></audio>
     </section>
 
@@ -165,9 +164,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
     © 2025 Mia Wisinski, Playful Heart Parenting. This app is for personal use only by those who have purchased access from Playful Heart Parenting. Please do not share this link publicly or distribute without explicit permission.
   </footer>
 
-  <!-- ffmpeg.wasm for MP3 conversion -->
-  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/ffmpeg.min.js"></script>
-
+  <!-- We will lazy-load ffmpeg.wasm AFTER recording stops -->
   <script>
 /* ===================
    Password overlay (case-insensitive)
@@ -181,21 +178,21 @@ const gateMsg = document.getElementById('gateMsg');
 function unlockGate(){
   gateOverlay.classList.add('hideGate');
   setTimeout(()=>{ gateOverlay.style.display='none'; }, 350);
-  sessionStorage.setItem('plotTwist_access','yes');
+  sessionStorage.setItem("plotTwist_access","yes");
 }
 (function initGate(){
-  if (sessionStorage.getItem('plotTwist_access') === 'yes') {
+  if (sessionStorage.getItem("plotTwist_access")==="yes") {
     gateOverlay.style.display='none';
   } else {
     gateOverlay.style.display='grid';
     gateInput.focus();
   }
 })();
-gateForm.addEventListener('submit', (e)=>{
+gateForm.addEventListener('submit',(e)=>{
   e.preventDefault();
-  const val = (gateInput.value||'').trim().toLowerCase();
-  if (val === PASSWORD.toLowerCase()) { gateMsg.textContent=''; unlockGate(); }
-  else { gateMsg.textContent = "That password doesn’t look right. Please check your receipt and try again."; gateInput.select(); }
+  const val=(gateInput.value||'').trim().toLowerCase();
+  if (val===PASSWORD.toLowerCase()) { gateMsg.textContent=''; unlockGate(); }
+  else { gateMsg.textContent="That password doesn’t look right. Please check your receipt and try again."; gateInput.select(); }
 });
 
 /* ===================
@@ -410,15 +407,13 @@ btnReset.addEventListener('click',()=>{
 });
 
 /* ===================
-   Recorder + MP3 conversion
+   Recorder + MP3 conversion (lazy-loaded ffmpeg)
 =================== */
-
-// Best recording MIME per browser
 function pickSupportedMime() {
   const candidates = [
     "audio/mp4;codecs=aac", "audio/mp4",
     "audio/webm;codecs=opus", "audio/webm",
-    "audio/mpeg" // rare
+    "audio/mpeg"
   ];
   for (const t of candidates) {
     if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) return t;
@@ -438,19 +433,36 @@ function isiOS() {
          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
-let mediaRecorder=null, chunks=[], mediaStream=null, recordedBlob=null;
-let mp3Blob=null; // result after conversion
-
-// ffmpeg loader (only when needed)
-const { createFFmpeg, fetchFile } = FFmpeg;
+// Lazy-load ffmpeg only when needed
 let ffmpeg = null;
+async function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[data-src="${src}"]`);
+    if (existing) {
+      if (window.FFmpeg) return resolve();
+      existing.addEventListener('load', () => resolve(), { once: true });
+      existing.addEventListener('error', () => reject(new Error('ffmpeg load error')), { once: true });
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = src; s.async = true; s.defer = true; s.setAttribute('data-src', src);
+    s.onload = () => resolve(); s.onerror = () => reject(new Error('ffmpeg load error'));
+    document.head.appendChild(s);
+  });
+}
 async function ensureFFmpeg() {
   if (ffmpeg) return ffmpeg;
+  mp3Note.style.display='block';
+  await loadScriptOnce('https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/ffmpeg.min.js');
+  if (!window.FFmpeg) throw new Error('FFmpeg not available');
+  const { createFFmpeg } = window.FFmpeg;
   ffmpeg = createFFmpeg({ log: false });
-  mp3Note.style.display = 'block';
   await ffmpeg.load();
   return ffmpeg;
 }
+
+let mediaRecorder=null, chunks=[], mediaStream=null, recordedBlob=null;
+let mp3Blob=null;
 
 async function startRecording(){
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
@@ -474,35 +486,31 @@ async function startRecording(){
       const finalType = mediaRecorder.mimeType || chosenMime || "audio/webm";
       recordedBlob = new Blob(chunks, { type: finalType });
 
-      // Preview in player using original format
+      // Preview original immediately
       player.src = URL.createObjectURL(recordedBlob);
       player.style.display = 'block';
       recPlay.disabled = false;
 
-      // Begin MP3 conversion automatically
+      // Convert to MP3
       try {
         recStatus.textContent = 'Converting to MP3…';
-        mp3Note.style.display='block';
-
         await ensureFFmpeg();
+        const { fetchFile } = window.FFmpeg;
         const inName  = `input.${extFromMime(finalType)}`;
         const outName = `output.mp3`;
-
         ffmpeg.FS('writeFile', inName, await fetchFile(recordedBlob));
         await ffmpeg.run('-i', inName, '-vn', '-ar', '44100', '-ac', '2', '-b:a', '192k', outName);
         const data = ffmpeg.FS('readFile', outName);
-
         mp3Blob = new Blob([data.buffer], { type: 'audio/mpeg' });
 
-        // Point player to MP3 (so preview matches download)
+        // Switch player to MP3
         player.src = URL.createObjectURL(mp3Blob);
-
         recStatus.textContent = 'MP3 ready!';
         recDl.disabled = false;
       } catch (err) {
         console.error(err);
         recStatus.textContent = 'Could not convert to MP3. You can still play the recording here.';
-        recDl.disabled = true; // keep disabled if conversion failed
+        recDl.disabled = true;
       } finally {
         if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream = null; }
         mp3Note.style.display='none';
@@ -530,14 +538,13 @@ function stopRecording(){
 function playRecording(){ if(player.src){ player.play(); } }
 
 async function downloadRecording(){
-  // Prefer MP3 if we have it
   const blob = mp3Blob || recordedBlob;
   if(!blob) return;
 
   const filename = mp3Blob ? 'plot-twist-story.mp3'
                            : `plot-twist-story.${extFromMime(blob.type)}`;
 
-  // iOS share sheet is more reliable for saving
+  // iOS share sheet is more reliable
   if (isiOS() && navigator.canShare && window.File) {
     try {
       const file = new File([blob], filename, { type: blob.type || 'audio/mpeg' });
