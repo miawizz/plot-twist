@@ -21,10 +21,10 @@
 
   <style>
 :root {
-  --bg: #fdf3de; /* light cream background */
-  --ink: #213547; /* dark text */
-  --brand: #eb6e52; /* coral button color */
-  --brand-dark: #ea694d; /* deeper coral */
+  --bg: #fdf3de;
+  --ink: #213547;
+  --brand: #eb6e52;
+  --brand-dark: #ea694d;
   --muted: #5a6b75;
   --card: #ffffff;
   --accent: #fef7e3;
@@ -58,27 +58,45 @@ button { appearance: none; border: 0; padding: 12px 14px; border-radius: 14px; f
 button.secondary { background: #edf6f9; color: var(--brand-dark); font-weight: 600; }
 .muted { color: var(--muted); font-size: 13px; }
 footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; padding: 0 16px; }
+
+/* Password overlay */
+#gateOverlay {
+  position: fixed; inset: 0; background: rgba(253,243,222,0.95);
+  backdrop-filter: blur(2px);
+  display: grid; place-items: center;
+  z-index: 9999; opacity: 1; transition: opacity .35s ease;
+}
+#gateCard {
+  width: min(560px, 92%); background: var(--card); border-radius: 20px; box-shadow: var(--shadow);
+  padding: 22px; text-align: left;
+}
+#gateCard h2 { margin: 0 0 8px; color: var(--brand-dark); font-size: 20px; }
+#gateCard p { margin: 6px 0; color: var(--muted); }
+#gateForm { display:flex; gap:10px; align-items:center; margin-top:12px; }
+#gateInput {
+  flex:1; padding:12px 14px; border:2px dashed #d7e3e8; border-radius:14px; font-weight:600;
+}
+#gateEnter { background: var(--brand); color:#fff; border:0; padding:12px 14px; border-radius:14px; font-weight:700; cursor:pointer; }
+#gateMsg { margin-top:8px; color:#ea694d; font-size:13px; }
+.hideGate { opacity: 0; pointer-events: none; }
   </style>
 </head>
 <body>
-  <!-- Password gate (case-insensitive) -->
-  <script>
-    const correctPassword = "pt";
-    if (!sessionStorage.getItem("plotTwistAccess")) {
-      const entered = prompt(
-        "Private access — this app is only for those who have purchased from Playful Heart Parenting.\nPlease enter the password (hint: it's in your receipt)"
-      );
-      const ok = (entered || "").trim().toLowerCase() === correctPassword.toLowerCase();
-      if (!ok) {
-        alert("Incorrect password. Access denied.");
-        window.location.href = "about:blank";
-      } else {
-        sessionStorage.setItem("plotTwistAccess", "true");
-      }
-    }
-  </script>
+  <!-- Password overlay (case-insensitive) -->
+  <section id="gateOverlay" role="dialog" aria-labelledby="gateTitle" aria-modal="true">
+    <div id="gateCard">
+      <h2 id="gateTitle">Private access</h2>
+      <p>This app is only for those who have purchased from <strong>Playful Heart Parenting</strong>. Please enter the password.</p>
+      <p><em>Hint: it’s in your receipt email after purchase.</em></p>
+      <form id="gateForm">
+        <input id="gateInput" type="password" autocomplete="current-password" placeholder="Enter password (e.g., pt)" />
+        <button id="gateEnter" type="submit">Enter</button>
+      </form>
+      <div id="gateMsg" aria-live="polite"></div>
+    </div>
+  </section>
 
-  <div class="container">
+  <div class="container" id="appRoot">
     <header>
       <img src="plot-twist-logo.png" alt="Plot Twist logo" class="logo" />
     </header>
@@ -101,14 +119,14 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
 
     <section class="card" aria-labelledby="recHeading" style="margin-top:16px">
       <h2 id="recHeading">Record Your Story!</h2>
-      <div class="out" id="recStatus" aria-live="polite">Record your story here</div>
+      <div class="out" id="recStatus" aria-live="polite">Ready to record. Your audio stays on your device.</div>
       <div class="btns" style="margin-top:10px">
         <button id="btnRecStart">Start recording</button>
         <button class="secondary" id="btnRecStop" disabled>Stop</button>
         <button class="secondary" id="btnRecPlay" disabled>Play</button>
-        <button class="secondary" id="btnRecDownload" disabled>Download</button>
+        <button class="secondary" id="btnRecDownload" disabled>Download MP3</button>
       </div>
-      <p class="muted">Want to record your story as you tell it so you can listen back afterwards. Tap to allow microphone access. This stays on your device. You can listen back and save it, or skip altogether</p>
+      <p class="muted" id="mp3Note" style="display:none;">Preparing MP3… first time may take a moment.</p>
       <audio id="player" controls style="width:100%; margin-top:10px; display:none"></audio>
     </section>
 
@@ -120,7 +138,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
           <button id="btnTitle">GET A TITLE!</button>
           <button class="secondary" id="btnReset">Reset</button>
         </div>
-        <p class="muted">Here's a title suggestion to inspire the beginning of your story. Need a way to start. Try "Once Upon a Time..." or "Long ago and far away, there lived a..." You cannot go wrong with the classics</p>
+        <p class="muted">Here's a title suggestion to inspire the beginning of your story. Need a way to start? Try "Once Upon a Time..." or "Long ago and far away, there lived a..." — you can’t go wrong with the classics.</p>
       </section>
 
       <section class="card" aria-labelledby="twistHeading">
@@ -129,7 +147,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
         <div class="btns" style="margin-top:10px">
           <button id="btnTwist">PLOT TWIST!</button>
         </div>
-        <p class="muted">Tap the Plot Twist button any time you want some inspiration</p>
+        <p class="muted">Tap the Plot Twist button any time you want some inspiration!</p>
       </section>
 
       <section class="card" aria-labelledby="wrapHeading">
@@ -138,7 +156,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
         <div class="btns" style="margin-top:10px">
           <button class="secondary" id="btnWrap">IDEAS FOR HOW TO END...</button>
         </div>
-        <p class="muted">Need a little nudge for how to wrap up. Tap for a general idea and find a way to end the story together</p>
+        <p class="muted">Need a little nudge for how to wrap up? Tap for a general idea and find a way to end the story together!</p>
       </section>
     </div>
   </div>
@@ -147,7 +165,39 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
     © 2025 Mia Wisinski, Playful Heart Parenting. This app is for personal use only by those who have purchased access from Playful Heart Parenting. Please do not share this link publicly or distribute without explicit permission.
   </footer>
 
+  <!-- ffmpeg.wasm for MP3 conversion -->
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/ffmpeg.min.js"></script>
+
   <script>
+/* ===================
+   Password overlay (case-insensitive)
+=================== */
+const PASSWORD = "pt";
+const gateOverlay = document.getElementById('gateOverlay');
+const gateForm = document.getElementById('gateForm');
+const gateInput = document.getElementById('gateInput');
+const gateMsg = document.getElementById('gateMsg');
+
+function unlockGate(){
+  gateOverlay.classList.add('hideGate');
+  setTimeout(()=>{ gateOverlay.style.display='none'; }, 350);
+  sessionStorage.setItem('plotTwist_access','yes');
+}
+(function initGate(){
+  if (sessionStorage.getItem('plotTwist_access') === 'yes') {
+    gateOverlay.style.display='none';
+  } else {
+    gateOverlay.style.display='grid';
+    gateInput.focus();
+  }
+})();
+gateForm.addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const val = (gateInput.value||'').trim().toLowerCase();
+  if (val === PASSWORD.toLowerCase()) { gateMsg.textContent=''; unlockGate(); }
+  else { gateMsg.textContent = "That password doesn’t look right. Please check your receipt and try again."; gateInput.select(); }
+});
+
 /* ===================
    Prompt data
 =================== */
@@ -316,7 +366,7 @@ const WRAP_HINTS = [
   "Let everyone get what they were hoping for",
   "Show how things have changed since the beginning",
   "End with the characters making a plan for next time",
-  "Wrap it up with a feeling. excitement, relief, joy, or calm",
+  "Wrap it up with a feeling — excitement, relief, joy, or calm",
   "Leave the story open so it could continue later",
   "End in the same place or situation where it began",
   "Give the final line to the main character"
@@ -339,6 +389,7 @@ const recPlay=document.getElementById('btnRecPlay');
 const recDl=document.getElementById('btnRecDownload');
 const recStatus=document.getElementById('recStatus');
 const player=document.getElementById('player');
+const mp3Note=document.getElementById('mp3Note');
 
 const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
 
@@ -359,36 +410,47 @@ btnReset.addEventListener('click',()=>{
 });
 
 /* ===================
-   Recorder (with correct file type per browser)
+   Recorder + MP3 conversion
 =================== */
 
-// Choose the best recording MIME type for this browser
+// Best recording MIME per browser
 function pickSupportedMime() {
   const candidates = [
-    "audio/webm;codecs=opus",
-    "audio/webm",
-    "audio/mp4;codecs=aac",
-    "audio/mp4",
-    "audio/mpeg" // rarely supported
+    "audio/mp4;codecs=aac", "audio/mp4",
+    "audio/webm;codecs=opus", "audio/webm",
+    "audio/mpeg" // rare
   ];
   for (const t of candidates) {
     if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) return t;
   }
   return "";
 }
-
-// Map MIME type to the right file extension
 function extFromMime(m) {
   if (!m) return "webm";
   m = m.toLowerCase();
+  if (m.includes("mp4"))  return "m4a";
   if (m.includes("webm")) return "webm";
-  if (m.includes("mp4"))  return "m4a"; // audio/mp4 -> .m4a
   if (m.includes("mpeg")) return "mp3";
-  if (m.includes("ogg"))  return "ogg";
   return "audio";
+}
+function isiOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
 let mediaRecorder=null, chunks=[], mediaStream=null, recordedBlob=null;
+let mp3Blob=null; // result after conversion
+
+// ffmpeg loader (only when needed)
+const { createFFmpeg, fetchFile } = FFmpeg;
+let ffmpeg = null;
+async function ensureFFmpeg() {
+  if (ffmpeg) return ffmpeg;
+  ffmpeg = createFFmpeg({ log: false });
+  mp3Note.style.display = 'block';
+  await ffmpeg.load();
+  return ffmpeg;
+}
 
 async function startRecording(){
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
@@ -402,19 +464,49 @@ async function startRecording(){
     mediaRecorder = new MediaRecorder(mediaStream, chosenMime ? { mimeType: chosenMime } : undefined);
 
     chunks = [];
+    recordedBlob = null;
+    mp3Blob = null;
+    player.style.display='none';
+    mp3Note.style.display='none';
+
     mediaRecorder.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
-    mediaRecorder.onstop = () => {
+    mediaRecorder.onstop = async () => {
       const finalType = mediaRecorder.mimeType || chosenMime || "audio/webm";
       recordedBlob = new Blob(chunks, { type: finalType });
 
-      const url = URL.createObjectURL(recordedBlob);
-      player.src = url;
+      // Preview in player using original format
+      player.src = URL.createObjectURL(recordedBlob);
       player.style.display = 'block';
       recPlay.disabled = false;
-      recDl.disabled = false;
-      recStatus.textContent = 'Recording ready to play or download';
 
-      if (mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream = null; }
+      // Begin MP3 conversion automatically
+      try {
+        recStatus.textContent = 'Converting to MP3…';
+        mp3Note.style.display='block';
+
+        await ensureFFmpeg();
+        const inName  = `input.${extFromMime(finalType)}`;
+        const outName = `output.mp3`;
+
+        ffmpeg.FS('writeFile', inName, await fetchFile(recordedBlob));
+        await ffmpeg.run('-i', inName, '-vn', '-ar', '44100', '-ac', '2', '-b:a', '192k', outName);
+        const data = ffmpeg.FS('readFile', outName);
+
+        mp3Blob = new Blob([data.buffer], { type: 'audio/mpeg' });
+
+        // Point player to MP3 (so preview matches download)
+        player.src = URL.createObjectURL(mp3Blob);
+
+        recStatus.textContent = 'MP3 ready!';
+        recDl.disabled = false;
+      } catch (err) {
+        console.error(err);
+        recStatus.textContent = 'Could not convert to MP3. You can still play the recording here.';
+        recDl.disabled = true; // keep disabled if conversion failed
+      } finally {
+        if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream = null; }
+        mp3Note.style.display='none';
+      }
     };
 
     mediaRecorder.start();
@@ -437,12 +529,28 @@ function stopRecording(){
 
 function playRecording(){ if(player.src){ player.play(); } }
 
-function downloadRecording(){
-  if(!recordedBlob) return;
-  const ext = extFromMime(recordedBlob.type);
+async function downloadRecording(){
+  // Prefer MP3 if we have it
+  const blob = mp3Blob || recordedBlob;
+  if(!blob) return;
+
+  const filename = mp3Blob ? 'plot-twist-story.mp3'
+                           : `plot-twist-story.${extFromMime(blob.type)}`;
+
+  // iOS share sheet is more reliable for saving
+  if (isiOS() && navigator.canShare && window.File) {
+    try {
+      const file = new File([blob], filename, { type: blob.type || 'audio/mpeg' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Plot Twist Story', text: 'Your recording' });
+        return;
+      }
+    } catch (_) {}
+  }
+
   const a = document.createElement('a');
-  a.href = player.src;
-  a.download = `plot-twist-story.${ext}`; // correct single extension
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
