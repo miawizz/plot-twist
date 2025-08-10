@@ -125,7 +125,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
         <button class="secondary" id="btnRecPlay" disabled>Play</button>
         <button class="secondary" id="btnRecDownload" disabled>Download MP3</button>
       </div>
-      <p class="muted" id="mp3Note" style="display:none;">Converting to MP3… first time may take a moment.</p>
+      <p class="muted" id="mp3Note" style="display:none;">Encoding MP3…</p>
       <audio id="player" controls style="width:100%; margin-top:10px; display:none"></audio>
     </section>
 
@@ -164,7 +164,9 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
     © 2025 Mia Wisinski, Playful Heart Parenting. This app is for personal use only by those who have purchased access from Playful Heart Parenting. Please do not share this link publicly or distribute without explicit permission.
   </footer>
 
-  <!-- We lazy-load ffmpeg.wasm AFTER recording stops -->
+  <!-- lamejs MP3 encoder -->
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js"></script>
+
   <script>
 /* ===================
    Password overlay (case-insensitive)
@@ -407,176 +409,17 @@ btnReset.addEventListener('click',()=>{
 });
 
 /* ===================
-   Recorder + MP3 conversion (lazy-loaded ffmpeg)
+   Recorder (Web Audio + lamejs MP3)
 =================== */
-function pickSupportedMime() {
-  const candidates = [
-    "audio/mp4;codecs=aac", "audio/mp4",
-    "audio/webm;codecs=opus", "audio/webm",
-    "audio/mpeg"
-  ];
-  for (const t of candidates) {
-    if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) return t;
-  }
-  return "";
-}
-function extFromMime(m) {
-  if (!m) return "webm";
-  m = m.toLowerCase();
-  if (m.includes("mp4"))  return "m4a";
-  if (m.includes("webm")) return "webm";
-  if (m.includes("mpeg")) return "mp3";
-  return "audio";
-}
+let audioCtx=null, mediaStream=null, sourceNode=null, processor=null;
+let leftBuffers=[], rightBuffers=[], recordingLength=0, mp3Blob=null;
+
 function isiOS() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
-// Lazy-load ffmpeg only when needed
-let ffmpeg = null;
-async function loadScriptOnce(src) {
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector(`script[data-src="${src}"]`);
-    if (existing) {
-      if (window.FFmpeg) return resolve();
-      existing.addEventListener('load', () => resolve(), { once: true });
-      existing.addEventListener('error', () => reject(new Error('ffmpeg load error')), { once: true });
-      return;
-    }
-    const s = document.createElement('script');
-    s.src = src; s.async = true; s.defer = true; s.setAttribute('data-src', src);
-    s.onload = () => resolve(); s.onerror = () => reject(new Error('ffmpeg load error'));
-    document.head.appendChild(s);
-  });
-}
-async function ensureFFmpeg() {
-  if (ffmpeg) return ffmpeg;
-  mp3Note.style.display='block';
-  // 1) Load wrapper
-  await loadScriptOnce('https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/ffmpeg.min.js');
-  if (!window.FFmpeg) throw new Error('FFmpeg wrapper not available');
-  // 2) Create instance and point to core files on CDN
-  const { createFFmpeg } = window.FFmpeg;
-  ffmpeg = createFFmpeg({
-    log: true,
-    corePath: 'https://unpkg.com/@ffmpeg/core@0.12.7/dist/ffmpeg-core.js',
-    progress: ({ ratio }) => { 
-      recStatus.textContent = `Converting to MP3… ${Math.round((ratio||0) * 100)}%`; 
-    }
-  });
-  // 3) Load core (.js + .wasm)
-  await ffmpeg.load();
-  return ffmpeg;
-}
-
-let mediaRecorder=null, chunks=[], mediaStream=null, recordedBlob=null;
-let mp3Blob=null;
-
-async function startRecording(){
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    recStatus.textContent='Microphone not available in this browser';
-    return;
-  }
-  try{
-    mediaStream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true }, video:false });
-
-    const chosenMime = pickSupportedMime();
-    mediaRecorder = new MediaRecorder(mediaStream, chosenMime ? { mimeType: chosenMime } : undefined);
-
-    chunks = [];
-    recordedBlob = null;
-    mp3Blob = null;
-    player.style.display='none';
-    mp3Note.style.display='none';
-
-    mediaRecorder.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
-    mediaRecorder.onstop = async () => {
-      const finalType = mediaRecorder.mimeType || chosenMime || "audio/webm";
-      recordedBlob = new Blob(chunks, { type: finalType });
-
-      // Preview original immediately
-      player.src = URL.createObjectURL(recordedBlob);
-      player.style.display = 'block';
-      recPlay.disabled = false;
-
-      // Convert to MP3
-      try {
-        recStatus.textContent = 'Converting to MP3…';
-        await ensureFFmpeg();
-        const { fetchFile } = window.FFmpeg;
-        const inName  = `input.${extFromMime(finalType)}`;
-        const outName = `output.mp3`;
-        ffmpeg.FS('writeFile', inName, await fetchFile(recordedBlob));
-        await ffmpeg.run('-i', inName, '-vn', '-ar', '44100', '-ac', '2', '-b:a', '192k', outName);
-        const data = ffmpeg.FS('readFile', outName);
-        mp3Blob = new Blob([data.buffer], { type: 'audio/mpeg' });
-
-        // Switch player to MP3
-        player.src = URL.createObjectURL(mp3Blob);
-        recStatus.textContent = 'MP3 ready!';
-        recDl.disabled = false;
-      } catch (err) {
-        console.error(err);
-        recStatus.textContent = 'Could not convert to MP3. You can still play the recording here.';
-        recDl.disabled = true;
-      } finally {
-        if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream = null; }
-        mp3Note.style.display='none';
-      }
-    };
-
-    mediaRecorder.start();
-    recStatus.textContent = 'Recording. Keep telling your story';
-    recStart.disabled = true;
-    recStop.disabled  = false;
-    recPlay.disabled  = true;
-    recDl.disabled    = true;
-
-  }catch(err){
-    recStatus.textContent = 'Microphone permission blocked. Enable in browser settings';
-  }
-}
-
-function stopRecording(){
-  if(mediaRecorder && mediaRecorder.state!=='inactive'){ mediaRecorder.stop(); }
-  recStart.disabled = false;
-  recStop.disabled  = true;
-}
-
-function playRecording(){ if(player.src){ player.play(); } }
-
-async function downloadRecording(){
-  const blob = mp3Blob || recordedBlob;
-  if(!blob) return;
-
-  const filename = mp3Blob ? 'plot-twist-story.mp3'
-                           : `plot-twist-story.${extFromMime(blob.type)}`;
-
-  // iOS share sheet is more reliable
-  if (isiOS() && navigator.canShare && window.File) {
-    try {
-      const file = new File([blob], filename, { type: blob.type || 'audio/mpeg' });
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Plot Twist Story', text: 'Your recording' });
-        return;
-      }
-    } catch (_) {}
-  }
-
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-}
-
-/* Buttons */
-recStart.addEventListener('click', startRecording);
-recStop.addEventListener('click',  stopRecording);
-recPlay.addEventListener('click',  playRecording);
-recDl.addEventListener('click',    downloadRecording);
-  </script>
-</body>
-</html>
+function mergeFloat32(buffers, totalLen){
+  const out = new Float32Array(totalLen);
+  let offset = 0;
+  for(const b of buffers){ out.set
