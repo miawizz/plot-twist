@@ -57,38 +57,49 @@ button.secondary { background: #edf6f9; color: var(--brand-dark); font-weight: 6
 .muted { color: var(--muted); font-size: 13px; }
 footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; padding: 0 16px; }
 
-/* Password overlay */
-#gateOverlay {
-  position: fixed; inset: 0; background: rgba(253,243,222,0.98);
-  display: grid; place-items: center;
-  z-index: 9999; opacity: 1; transition: opacity .35s ease;
+/* One-time courtesy overlay */
+#courtesyOverlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.4);
+  display: none; place-items: center;
+  z-index: 9999; opacity: 1; transition: opacity .3s ease;
 }
-#gateCard {
-  width: min(560px, 92%); background: var(--card); border-radius: 20px; box-shadow: var(--shadow);
-  padding: 22px; text-align: left;
+.courtesy-card {
+  width: min(560px, 92%);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 18px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.18);
+  padding: 22px;
+  text-align: left;
 }
-#gateCard h2 { margin: 0 0 8px; color: var(--brand-dark); font-size: 20px; }
-#gateCard p { margin: 6px 0; color: var(--muted); }
-#gateForm { display:flex; gap:10px; align-items:center; margin-top:12px; }
-#gateInput {
-  flex:1; padding:12px 14px; border:2px dashed #d7e3e8; border-radius:14px; font-weight:600;
+.courtesy-card h2 { margin: 0 0 8px; color: var(--brand-dark); font-size: 20px; }
+.courtesy-card p { margin: 6px 0 14px; color: var(--muted); }
+.courtesy-check { display:flex; align-items:center; gap:10px; margin: 6px 0 12px; }
+#courtesyContinue {
+  width: 100%; padding: 12px 14px; border: 0;
+  border-radius: 14px; font-weight: 700; cursor: pointer;
+  background: var(--brand); color: #fff;
+  box-shadow: 0 4px 14px rgba(0,0,0,.08);
 }
-#gateEnter { background: var(--brand); color:#fff; border:0; padding:12px 14px; border-radius:14px; font-weight:700; cursor:pointer; }
-#gateMsg { margin-top:8px; color:#ea694d; font-size:13px; }
-.hideGate { opacity: 0; pointer-events: none; }
+#courtesyContinue:disabled { opacity: .5; cursor: not-allowed; }
+.courtesy-hide { opacity: 0; pointer-events: none; }
   </style>
 </head>
 <body>
-  <!-- Password overlay (case-insensitive, no hint) -->
-  <section id="gateOverlay" role="dialog" aria-labelledby="gateTitle" aria-modal="true">
-    <div id="gateCard">
-      <h2 id="gateTitle">Private access</h2>
-      <p>This app is only for those who have purchased from <strong>Playful Heart Parenting</strong>. Please enter the password from your receipt.</p>
-      <form id="gateForm">
-        <input id="gateInput" type="password" autocomplete="current-password" placeholder="Enter password" />
-        <button id="gateEnter" type="submit">Enter</button>
-      </form>
-      <div id="gateMsg" aria-live="polite"></div>
+
+  <!-- One-time courtesy reminder overlay -->
+  <section id="courtesyOverlay" role="dialog" aria-labelledby="courtesyTitle" aria-modal="true">
+    <div class="courtesy-card">
+      <h2 id="courtesyTitle">Thanks for supporting this work</h2>
+      <p>Please do not share this link.</p>
+
+      <label class="courtesy-check">
+        <input type="checkbox" id="courtesyAck" />
+        <span>I understand — got it!</span>
+      </label>
+
+      <button id="courtesyContinue" disabled>Continue</button>
     </div>
   </section>
 
@@ -163,33 +174,26 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
 
   <script>
 /* ===================
-   Password overlay (case-insensitive)
+   One-time courtesy reminder
 =================== */
-const PASSWORD = "pt";
-const gateOverlay = document.getElementById('gateOverlay');
-const gateForm = document.getElementById('gateForm');
-const gateInput = document.getElementById('gateInput');
-const gateMsg = document.getElementById('gateMsg');
+(function(){
+  const COURTESY_KEY = 'plotTwist_courtesy_v1';
+  const overlay = document.getElementById('courtesyOverlay');
+  const ack     = document.getElementById('courtesyAck');
+  const goBtn   = document.getElementById('courtesyContinue');
 
-function unlockGate(){
-  gateOverlay.classList.add('hideGate');
-  setTimeout(()=>{ gateOverlay.style.display='none'; }, 350);
-  sessionStorage.setItem("plotTwist_access","yes");
-}
-(function initGate(){
-  if (sessionStorage.getItem("plotTwist_access")==="yes") {
-    gateOverlay.style.display='none';
+  if (localStorage.getItem(COURTESY_KEY) === 'yes') {
+    // already acknowledged on this device
   } else {
-    gateOverlay.style.display='grid';
-    gateInput.focus();
+    overlay.style.display = 'grid';
+    ack.addEventListener('change', ()=>{ goBtn.disabled = !ack.checked; });
+    goBtn.addEventListener('click', ()=>{
+      localStorage.setItem(COURTESY_KEY, 'yes');
+      overlay.classList.add('courtesy-hide');
+      setTimeout(()=>{ overlay.style.display='none'; }, 320);
+    });
   }
 })();
-gateForm.addEventListener('submit',(e)=>{
-  e.preventDefault();
-  const val=(gateInput.value||'').trim().toLowerCase();
-  if (val===PASSWORD.toLowerCase()) { gateMsg.textContent=''; unlockGate(); }
-  else { gateMsg.textContent="That password doesn’t look right. Please check your receipt and try again."; gateInput.select(); }
-});
 
 /* ===================
    Prompt data
