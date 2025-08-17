@@ -394,7 +394,7 @@ const TWISTS = [
   "Suddenly, they heard a voice yelling, “Charge!” and looked up to see a great big angry donkey running straight toward them.",
   "Just then, a whistle blew from behind them. “That’s enough of that!” said the football coach who they hadn’t realized was there. “It’s time to play some football!”",
   "Suddenly, a loud voice shrieked, “Get back here, Matilda!!” and they turned to see a farmer chasing his cow Matilda, who was running away.",
-  "Suddenly, a voice yelled, “LOOK OUT BELOW!!” and they looked up to see a funny‑looking little man wearing goggles in a parachute floating down from the sky right above them.",
+  "Suddenly, a voice yelled, “LOOK OUT BELOW!!” and they looked up to see a funny-looking little man wearing goggles in a parachute floating down from the sky right above them.",
   "Suddenly, a loud grumbling sound started getting louder and louder… it sounded like a hungry tummy…",
   "Just then, a very strange smell started wafting through the air. It smelled like rotten eggs…",
   "Just then, a delicious smell started filling the air… it smelled like someone was baking pie!",
@@ -492,18 +492,37 @@ const recDl=document.getElementById('btnRecDownload');
 const recStatus=document.getElementById('recStatus');
 const player=document.getElementById('player');
 
-const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
+/* ===================
+   Non-repeating shufflers
+=================== */
+// Replaces the old 'pick' with a shuffle-bag that cycles all items before repeating
+function makeShuffler(arr){
+  let bag = [];
+  return function next(){
+    if (bag.length === 0){
+      bag = arr.slice();
+      for (let i = bag.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [bag[i], bag[j]] = [bag[j], bag[i]];
+      }
+    }
+    return bag.pop();
+  };
+}
+
+const nextTitle = makeShuffler(TITLES);
+const nextTwist = makeShuffler(TWISTS);
 
 /* ===================
    Generators
 =================== */
 btnTitle.addEventListener('click',()=>{
-  titleOut.textContent=pick(TITLES)||'A brand new story';
+  titleOut.textContent=nextTitle()||'A brand new story';
   twistOut.textContent='Tap the button below for a new idea';
   wrapOut.textContent='Tap the button below for a tip on how to end your story';
 });
-btnTwist.addEventListener('click',()=>{ twistOut.textContent=pick(TWISTS)||'Something unexpected happened'; });
-btnWrap.addEventListener('click',()=>{ wrapOut.textContent=pick(WRAP_HINTS)||'Finish in a simple, happy way'; });
+btnTwist.addEventListener('click',()=>{ twistOut.textContent=nextTwist()||'Something unexpected happened'; });
+btnWrap.addEventListener('click',()=>{ wrapOut.textContent=WRAP_HINTS[Math.floor(Math.random()*WRAP_HINTS.length)]||'Finish in a simple, happy way'; });
 btnReset.addEventListener('click',()=>{
   titleOut.textContent='Tap the button below to get a title';
   twistOut.textContent='Tap the button below for a new idea';
