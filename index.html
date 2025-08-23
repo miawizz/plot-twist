@@ -143,6 +143,8 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
         <div class="out" id="titleOut" aria-live="polite">Tap the button below to get a title</div>
         <div class="btns" style="margin-top:10px">
           <button id="btnTitle">GET A TITLE!</button>
+          <button class="secondary" id="btnTitleBack">Back</button>
+          <button class="secondary" id="btnTitleFwd">Forward</button>
           <button class="secondary" id="btnReset">Reset</button>
         </div>
         <p class="muted">Here's a title suggestion to inspire the beginning of your story. Need a way to start? Try "Once Upon a Time..." or "Long ago and far away, there lived a..." — you can’t go wrong with the classics.</p>
@@ -153,6 +155,8 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
         <div class="out" id="twistOut" aria-live="polite">Tap the button below for a new idea</div>
         <div class="btns" style="margin-top:10px">
           <button id="btnTwist">PLOT TWIST!</button>
+          <button class="secondary" id="btnTwistBack">Back</button>
+          <button class="secondary" id="btnTwistFwd">Forward</button>
         </div>
         <p class="muted">Tap the Plot Twist button any time you want some inspiration!</p>
       </section>
@@ -162,6 +166,8 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
         <div class="out" id="wrapOut" aria-live="polite">Tap the button below for a tip on how to end your story</div>
         <div class="btns" style="margin-top:10px">
           <button class="secondary" id="btnWrap">IDEAS FOR HOW TO END...</button>
+          <button class="secondary" id="btnWrapBack">Back</button>
+          <button class="secondary" id="btnWrapFwd">Forward</button>
         </div>
         <p class="muted">Need a little nudge for how to wrap up? Tap for a general idea and find a way to end the story together!</p>
       </section>
@@ -174,7 +180,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
 
   <script>
 /* ===================
-   One-time courtesy reminder
+   One-time courtesy reminder (unchanged)
 =================== */
 (function(){
   const COURTESY_KEY = 'plotTwist_courtesy_v1';
@@ -182,9 +188,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
   const ack     = document.getElementById('courtesyAck');
   const goBtn   = document.getElementById('courtesyContinue');
 
-  if (localStorage.getItem(COURTESY_KEY) === 'yes') {
-    // already acknowledged on this device
-  } else {
+  if (localStorage.getItem(COURTESY_KEY) !== 'yes') {
     overlay.style.display = 'grid';
     ack.addEventListener('change', ()=>{ goBtn.disabled = !ack.checked; });
     goBtn.addEventListener('click', ()=>{
@@ -196,7 +200,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
 })();
 
 /* ===================
-   Prompt data
+   Prompt data (unchanged)
 =================== */
 const TITLES = [
   "The chipmunk who accidentally ate all the acorns in the forest",
@@ -475,16 +479,26 @@ const WRAP_HINTS = [
 ];
 
 /* ===================
-   DOM + helpers
+   DOM refs (unchanged ids except added Back/Forward)
 =================== */
 const titleOut=document.getElementById('titleOut');
 const twistOut=document.getElementById('twistOut');
 const wrapOut=document.getElementById('wrapOut');
+
 const btnTitle=document.getElementById('btnTitle');
-const btnTwist=document.getElementById('btnTwist');
-const btnWrap=document.getElementById('btnWrap');
+const btnTitleBack=document.getElementById('btnTitleBack');
+const btnTitleFwd=document.getElementById('btnTitleFwd');
 const btnReset=document.getElementById('btnReset');
 
+const btnTwist=document.getElementById('btnTwist');
+const btnTwistBack=document.getElementById('btnTwistBack');
+const btnTwistFwd=document.getElementById('btnTwistFwd');
+
+const btnWrap=document.getElementById('btnWrap');
+const btnWrapBack=document.getElementById('btnWrapBack');
+const btnWrapFwd=document.getElementById('btnWrapFwd');
+
+/* Recorder refs (unchanged) */
 const recStart=document.getElementById('btnRecStart');
 const recStop=document.getElementById('btnRecStop');
 const recPlay=document.getElementById('btnRecPlay');
@@ -493,44 +507,177 @@ const recStatus=document.getElementById('recStatus');
 const player=document.getElementById('player');
 
 /* ===================
-   Non-repeating shufflers
+   Deck with history + persistent state
 =================== */
-// Replaces the old 'pick' with a shuffle-bag that cycles all items before repeating
-function makeShuffler(arr){
-  let bag = [];
-  return function next(){
-    if (bag.length === 0){
-      bag = arr.slice();
-      for (let i = bag.length - 1; i > 0; i--){
-        const j = Math.floor(Math.random() * (i + 1));
-        [bag[i], bag[j]] = [bag[j], bag[i]];
-      }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function makeDeck(ns, items){
+  const K = s => `${ns}_${s}`;
+  const KEY_VER=K('ver'), KEY_ORDER=K('ord'), KEY_IDX=K('idx'), KEY_HIST=K('hist'), KEY_POS=K('pos');
+  const version = String(items.length); // bump automatically if list length changes
+
+  function freshOrder(avoid){
+    const order = shuffle(Array.from({length:items.length},(_,i)=>i));
+    if (avoid!=null && items.length>1 && order[0]===avoid){
+      const k = 1 + Math.floor(Math.random()*(order.length-1));
+      [order[0],order[k]]=[order[k],order[0]];
     }
-    return bag.pop();
-  };
+    return order;
+  }
+
+  function save(s){
+    localStorage.setItem(KEY_VER, version);
+    localStorage.setItem(KEY_ORDER, JSON.stringify(s.order));
+    localStorage.setItem(KEY_IDX, String(s.idx));
+    localStorage.setItem(KEY_HIST, JSON.stringify(s.history));
+    localStorage.setItem(KEY_POS, String(s.pos));
+  }
+  function load(){
+    let s = { order:null, idx:0, history:[], pos:0 };
+    if (localStorage.getItem(KEY_VER) === version){
+      try{
+        s.order = JSON.parse(localStorage.getItem(KEY_ORDER) || 'null');
+        s.idx   = parseInt(localStorage.getItem(KEY_IDX) || '0',10) || 0;
+        s.history = JSON.parse(localStorage.getItem(KEY_HIST) || '[]');
+        s.pos   = parseInt(localStorage.getItem(KEY_POS) || '0',10) || 0;
+      }catch{}
+    }
+    if (!Array.isArray(s.order) || s.order.length !== items.length){
+      s.order=freshOrder(null); s.idx=0; s.history=[]; s.pos=0;
+    } else {
+      s.idx = Math.min(Math.max(0,s.idx), Math.max(0, s.order.length-1));
+      s.pos = Math.min(Math.max(0,s.pos), s.history.length);
+      s.history=s.history.filter(n=>Number.isInteger(n)&&n>=0&&n<items.length);
+    }
+    save(s); return s;
+  }
+
+  let S = load();
+
+  function current(){
+    if (!S.history.length || S.pos===0) return null;
+    return S.pos===S.history.length ? S.history[S.history.length-1] : S.history[S.pos-1];
+  }
+  function canBack(){ return S.pos>1; }
+  function canFwd(){ return S.pos<S.history.length; }
+
+  function next(){
+    if (S.pos < S.history.length) S.history.splice(S.pos); // clear forward history
+    let {order, idx} = S;
+    const pick = order[idx];
+    idx++;
+    if (idx>=order.length){ const avoid=pick; order=freshOrder(avoid); idx=0; }
+    S.order=order; S.idx=idx; S.history.push(pick);
+    if (S.history.length>500) S.history.shift();
+    S.pos=S.history.length; save(S);
+    return pick;
+  }
+  function back(){ if (!canBack()) return null; S.pos-=1; save(S); return S.history[S.pos-1]; }
+  function fwd(){ if (!canFwd()) return null; const i=S.history[S.pos]; S.pos+=1; save(S); return i; }
+  function reset(){ S={ order:freshOrder(current()), idx:0, history:[], pos:0 }; save(S); }
+
+  return { items, next, back, fwd, current, canBack, canFwd, reset };
 }
 
-const nextTitle = makeShuffler(TITLES);
-const nextTwist = makeShuffler(TWISTS);
+/* Build decks */
+const deckTitle = makeDeck('pt_title', TITLES);
+const deckTwist = makeDeck('pt_twist', TWISTS);
+const deckWrap  = makeDeck('pt_wrap',  WRAP_HINTS);
+
+/* Render helpers */
+function renderDeck(deck, outEl, backBtn, fwdBtn, emptyText){
+  const i = deck.current();
+  outEl.textContent = (i==null) ? emptyText : deck.items[i];
+  backBtn.disabled = !deck.canBack();
+  fwdBtn.disabled  = !deck.canFwd();
+}
 
 /* ===================
-   Generators
+   Generators + wiring (kept original behaviors)
 =================== */
-btnTitle.addEventListener('click',()=>{
-  titleOut.textContent=nextTitle()||'A brand new story';
-  twistOut.textContent='Tap the button below for a new idea';
-  wrapOut.textContent='Tap the button below for a tip on how to end your story';
-});
-btnTwist.addEventListener('click',()=>{ twistOut.textContent=nextTwist()||'Something unexpected happened'; });
-btnWrap.addEventListener('click',()=>{ wrapOut.textContent=WRAP_HINTS[Math.floor(Math.random()*WRAP_HINTS.length)]||'Finish in a simple, happy way'; });
-btnReset.addEventListener('click',()=>{
+function resetOutputs(){
   titleOut.textContent='Tap the button below to get a title';
   twistOut.textContent='Tap the button below for a new idea';
   wrapOut.textContent='Tap the button below for a tip on how to end your story';
+}
+
+/* Title */
+btnTitle.addEventListener('click', ()=>{
+  const i = deckTitle.next();
+  titleOut.textContent = deckTitle.items[i];
+  // Clear the other two prompts like your original flow did
+  twistOut.textContent='Tap the button below for a new idea';
+  wrapOut.textContent='Tap the button below for a tip on how to end your story';
+  btnTitleBack.disabled = !deckTitle.canBack();
+  btnTitleFwd.disabled  = !deckTitle.canFwd();
+});
+btnTitleBack.addEventListener('click', ()=>{
+  const i = deckTitle.back(); if (i!=null){
+    titleOut.textContent = deckTitle.items[i];
+    btnTitleBack.disabled = !deckTitle.canBack();
+    btnTitleFwd.disabled  = !deckTitle.canFwd();
+  }
+});
+btnTitleFwd.addEventListener('click', ()=>{
+  const i = deckTitle.fwd(); if (i!=null){
+    titleOut.textContent = deckTitle.items[i];
+    btnTitleBack.disabled = !deckTitle.canBack();
+    btnTitleFwd.disabled  = !deckTitle.canFwd();
+  }
+});
+btnReset.addEventListener('click', ()=>{ deckTitle.reset(); resetOutputs(); btnTitleBack.disabled=true; btnTitleFwd.disabled=true; });
+
+/* Twist */
+btnTwist.addEventListener('click', ()=>{
+  const i = deckTwist.next();
+  twistOut.textContent = deckTwist.items[i];
+  btnTwistBack.disabled = !deckTwist.canBack();
+  btnTwistFwd.disabled  = !deckTwist.canFwd();
+});
+btnTwistBack.addEventListener('click', ()=>{
+  const i = deckTwist.back(); if (i!=null){
+    twistOut.textContent = deckTwist.items[i];
+    btnTwistBack.disabled = !deckTwist.canBack();
+    btnTwistFwd.disabled  = !deckTwist.canFwd();
+  }
+});
+btnTwistFwd.addEventListener('click', ()=>{
+  const i = deckTwist.fwd(); if (i!=null){
+    twistOut.textContent = deckTwist.items[i];
+    btnTwistBack.disabled = !deckTwist.canBack();
+    btnTwistFwd.disabled  = !deckTwist.canFwd();
+  }
 });
 
+/* Wrap */
+btnWrap.addEventListener('click', ()=>{
+  const i = deckWrap.next();
+  wrapOut.textContent = deckWrap.items[i];
+  btnWrapBack.disabled = !deckWrap.canBack();
+  btnWrapFwd.disabled  = !deckWrap.canFwd();
+});
+btnWrapBack.addEventListener('click', ()=>{
+  const i = deckWrap.back(); if (i!=null){
+    wrapOut.textContent = deckWrap.items[i];
+    btnWrapBack.disabled = !deckWrap.canBack();
+    btnWrapFwd.disabled  = !deckWrap.canFwd();
+  }
+});
+btnWrapFwd.addEventListener('click', ()=>{
+  const i = deckWrap.fwd(); if (i!=null){
+    wrapOut.textContent = deckWrap.items[i];
+    btnWrapBack.disabled = !deckWrap.canBack();
+    btnWrapFwd.disabled  = !deckWrap.canFwd();
+  }
+});
+
+/* On load: show last picks if any, update nav states */
+renderDeck(deckTitle, titleOut, btnTitleBack, btnTitleFwd, 'Tap the button below to get a title');
+renderDeck(deckTwist, twistOut, btnTwistBack, btnTwistFwd, 'Tap the button below for a new idea');
+renderDeck(deckWrap , wrapOut , btnWrapBack , btnWrapFwd , 'Tap the button below for a tip on how to end your story');
+
 /* ===================
-   Recorder (AAC on Safari/iOS, WebM on Chrome/Android)
+   Recorder (unchanged core, with minor robustness)
 =================== */
 let mediaRecorder=null, mediaStream=null, chunks=[], lastBlobUrl=null;
 
