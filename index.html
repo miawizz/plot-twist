@@ -87,7 +87,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
   </style>
 </head>
 <body>
-  <!-- Place this snippet right after <body> in each app -->
+<!-- Place this snippet right after <body> in each app -->
 <style>
   /* Minimal, brand‑agnostic styling */
   .install-help {position:sticky;top:0;z-index:10001;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
@@ -101,7 +101,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
   .install-help__panel{padding:.75rem .9rem .95rem .9rem;display:grid;gap:.75rem}
   .install-help__panel h4{margin:.25rem 0 .25rem 0;font-size:.95rem}
   .install-help__panel p{margin:0 0 .35rem 0;font-size:.9rem}
-  .install-help__close{margin-left:auto;border:0;background:transparent;font:inherit;cursor:pointer;opacity:.7}
+  .install-help__close{margin-left:auto;border:0;background:transparent;font:inherit;cursor:pointer;color:#000;opacity:1;line-height:1;font-weight:700;width:32px;height:32px;display:inline-grid;place-items:center}
   .install-help__tips{font-size:.85rem;opacity:.9}
   .install-help__box{border:1px solid #efdfda;background:#fff;border-radius:.65rem;padding:.65rem .75rem}
   .install-help__steps{margin:.25rem 0 0 1.15rem}
@@ -109,6 +109,8 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
   .install-help__never{align-self:start;border:0;background:transparent;padding:0;font:inherit;color:#6b7f88;text-decoration:underline;cursor:pointer}
   .install-help__never:hover{color:#46565f}
   .hidden{display:none}
+  /* Gate visibility until welcome agreement accepted */
+  .install-help.gate-hide{display:none}
   @media (prefers-reduced-motion: reduce){.install-help__summary .caret{transition:none}}
 </style>
 
@@ -117,7 +119,7 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
     <div class="install-help__summary" role="button" aria-expanded="false">
       <svg class="caret" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z"></path></svg>
       <strong>Tap here for a reminder of how to save this app to your home screen</strong>
-      <button class="install-help__close" type="button" title="Hide">✕</button>
+      <button class="install-help__close" type="button" title="Hide">✖</button>
     </div>
   </summary>
   <div class="install-help__panel" id="install-help-panel" aria-live="polite">
@@ -232,6 +234,33 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
     btn && btn.setAttribute('aria-expanded', exp);
     if(label){ label.textContent = root.open ? openText : closedText; }
   });
+})();
+</script>
+
+<!-- Gate the bar so it only appears after the welcome agreement button -->
+<script>
+(function(){
+  try{
+    var bar = document.getElementById('install-help');
+    if(!bar) return;
+    // Hide until accepted
+    if(localStorage.getItem('lm_ack') !== 'yes'){
+      bar.classList.add('gate-hide');
+    }
+    // When the welcome button is clicked and lm_ack is set, reveal the bar
+    window.addEventListener('DOMContentLoaded', function(){
+      var ackBtn = document.getElementById('ackBtn');
+      if(ackBtn){
+        ackBtn.addEventListener('click', function(){
+          setTimeout(function(){
+            if(localStorage.getItem('lm_ack') === 'yes'){
+              bar.classList.remove('gate-hide');
+            }
+          }, 0);
+        });
+      }
+    });
+  } catch(e){}
 })();
 </script>
 
