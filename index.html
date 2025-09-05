@@ -309,12 +309,13 @@ footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; pad
     <section class="card" aria-labelledby="recHeading" style="margin-top:16px">
       <h2 id="recHeading">Record Your Story!</h2>
       <div class="out" id="recStatus" aria-live="polite">Ready to record. Your audio stays on your device.</div>
-      <div class="btns" style="margin-top:10px">
-        <button id="btnRecStart">Start recording</button>
-        <button class="secondary" id="btnRecStop" disabled>Stop</button>
-        <button class="secondary" id="btnRecPlay" disabled>Play</button>
-        <button class="secondary" id="btnRecDownload" disabled>Download</button>
-      </div>
+<div class="btns" style="margin-top:10px">
+  <button id="btnRecStart">Start recording</button>
+  <button class="secondary" id="btnRecPause" disabled>Pause</button>
+  <button class="secondary" id="btnRecStop" disabled>Stop</button>
+  <button class="secondary" id="btnRecPlay" disabled>Play</button>
+  <button class="secondary" id="btnRecDownload" disabled>Download</button>
+</div>
       <p class="muted">Tap to allow microphone access. This stays on your device.</p>
       <audio id="player" controls style="width:100%; margin-top:10px; display:none"></audio>
     </section>
@@ -682,11 +683,13 @@ const btnWrapFwd=document.getElementById('btnWrapFwd');
 
 /* Recorder refs (unchanged) */
 const recStart=document.getElementById('btnRecStart');
+const recPause=document.getElementById('btnRecPause');   // NEW
 const recStop=document.getElementById('btnRecStop');
 const recPlay=document.getElementById('btnRecPlay');
 const recDl=document.getElementById('btnRecDownload');
 const recStatus=document.getElementById('recStatus');
 const player=document.getElementById('player');
+
 
 /* ===================
    Deck with history + persistent state
@@ -881,15 +884,29 @@ function extFromMime(m){
   if (s.includes("webm")) return "webm";
   return "audio";
 }
+    // Hide Pause if the browser can't pause/resume MediaRecorder (e.g., some iOS versions)
+const REC_CAN_PAUSE = !!(window.MediaRecorder && MediaRecorder.prototype && typeof MediaRecorder.prototype.pause === 'function');
+if (!REC_CAN_PAUSE && recPause) { recPause.style.display = 'none'; }
+
 
 recStart.addEventListener('click', async ()=>{
+  recStart.disabled = true; // prevent double-clicks immediately
   try{
-    mediaStream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true, autoGainControl:true }, video:false });
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      audio:{ echoCancellation:true, noiseSuppression:true, autoGainControl:true },
+      video:false
+    });
     const mime = pickSupportedMime();
     mediaRecorder = new MediaRecorder(mediaStream, mime ? { mimeType: mime } : undefined);
     chunks = [];
 
     mediaRecorder.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+
+    // NEW: update status live for start/pause/resume
+    mediaRecorder.onstart  = () => { recStatus.textContent = 'Recording…'; };
+    mediaRecorder.onpause  = () => { recStatus.textContent = 'Paused'; };
+    mediaRecorder.onresume = () => { recStatus.textContent = 'Recording…'; };
+
     mediaRecorder.onstop = () => {
       const type = mediaRecorder.mimeType || mime || "audio/webm";
       const blob = new Blob(chunks, { type });
@@ -917,20 +934,55 @@ recStart.addEventListener('click', async ()=>{
     };
 
     mediaRecorder.start();
-    recStatus.textContent='Recording…';
-    recStart.disabled=true;
-    recStop.disabled=false;
-    recPlay.disabled=true;
-    recDl.disabled=true;
-  }catch(err){
-    recStatus.textContent='Microphone not available or permission denied.';
-  }
+
+    // Keep your existing button state updates, plus enable Pause
+    recStart.disabled = true;
+    recStop.disabled  = false;
+
+    // NEW: only show/enable Pause when supported
+    if (REC_CAN_PAUSE && recPause){
+      recPause.disabled = false;
+      recPause.textContent = 'Pause';
+      recPause.setAttribute('aria-pressed','false');
+    }
+
+    recPlay.disabled = true;
+    recDl.disabled   = true;
+
+}catch(err){
+  recStatus.textContent='Microphone not available or permission denied.';
+  recStart.disabled = false; // allow trying again after an error
+}
+
 });
+if (recPause){
+  recPause.addEventListener('click', ()=>{
+    if (!mediaRecorder) return;
+    if (mediaRecorder.state === 'recording') {
+      try { mediaRecorder.pause(); } catch(e){}
+      recPause.textContent = 'Resume';
+      recPause.setAttribute('aria-pressed','true');
+    } else if (mediaRecorder.state === 'paused') {
+      try { mediaRecorder.resume(); } catch(e){}
+      recPause.textContent = 'Pause';
+      recPause.setAttribute('aria-pressed','false');
+    }
+  });
+}
+
 recStop.addEventListener('click', ()=>{
   if(mediaRecorder && mediaRecorder.state!=='inactive'){ mediaRecorder.stop(); }
   recStart.disabled=false;
   recStop.disabled=true;
+
+  // NEW: reset Pause button state on stop
+  if (REC_CAN_PAUSE && recPause){
+    recPause.disabled = true;
+    recPause.textContent = 'Pause';
+    recPause.setAttribute('aria-pressed','false');
+  }
 });
+
 recPlay.addEventListener('click', ()=>{ if(player.src) player.play(); });
   </script>
 </body>
