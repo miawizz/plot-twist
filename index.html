@@ -986,5 +986,16 @@ recStop.addEventListener('click', ()=>{
 
 recPlay.addEventListener('click', ()=>{ if(player.src) player.play(); });
   </script>
+  <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker
+      .register('/plot-twist/sw.js', { scope: '/plot-twist/' })
+      .catch(function (err) {
+        console.log('Service Worker registration failed:', err);
+      });
+  });
+}
+</script>
 </body>
 </html>
