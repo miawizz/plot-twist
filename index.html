@@ -1109,6 +1109,20 @@ recStart.addEventListener('click', async ()=>{
     chunks = [];
 
     mediaRecorder.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+    mediaRecorder.onerror = (event) => {
+  console.error('Recorder error:', event);
+
+  recStatus.textContent =
+    'Recording was interrupted. This can happen if the app changes screens or loses microphone access.';
+
+  recStart.disabled = false;
+  recStop.disabled = true;
+
+  if (REC_CAN_PAUSE && recPause){
+    recPause.disabled = true;
+    recPause.textContent = 'Pause';
+  }
+};
 
     // NEW: update status live for start/pause/resume
     mediaRecorder.onstart  = () => { recStatus.textContent = 'Recording…'; };
