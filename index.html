@@ -126,6 +126,25 @@ a.home-button {
 .instruction-content li {
   margin-bottom: 12px;
 }
+
+/* ---------- Shared Story Gallery ---------- */
+.story-gallery{margin-top:20px}
+.story-gallery-grid{display:grid;gap:10px;margin-top:12px}
+.story-card{background:#fffaf3;border:1px solid #efd8cb;border-radius:14px;padding:12px;text-align:left}
+.story-card-title{font-weight:700;margin-bottom:2px}
+.story-card-theme,.story-byline{color:var(--muted);font-size:12px;margin-bottom:8px}
+.story-card audio{width:100%}
+.story-empty{color:var(--muted);font-size:13px}
+.story-share-note{margin-top:10px;padding:10px 12px;border-radius:12px;background:#fffaf3;color:var(--muted);font-size:13px}
+.story-share-form{display:grid;gap:10px;margin-top:12px;text-align:left}
+.story-share-form label{display:block;font-weight:700;color:#53322b;font-size:.9rem;margin-bottom:4px}
+.story-share-form input{width:100%;padding:.8rem .9rem;border-radius:12px;border:2px dashed #f8b934;font-family:inherit;font-size:.95rem}
+.story-modal{position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:center;justify-content:center;padding:20px;z-index:25000}
+.story-modal.show{display:flex}
+.story-modal-card{max-width:440px;width:100%;background:#fff;border-radius:18px;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.24)}
+.story-modal-card h3{margin:0 0 8px;color:var(--brand-dark);text-align:center}
+.story-modal-card>p{color:var(--muted);margin:0 0 14px;text-align:center}
+
   </style>
 </head>
 <body>
@@ -211,8 +230,10 @@ a.home-button {
   <button class="secondary" id="btnRecStop" disabled>Stop</button>
   <button class="secondary" id="btnRecPlay" disabled>Play</button>
   <button class="secondary" id="btnRecDownload" disabled>Download</button>
+  <button id="btnRecShare" disabled>Share This Story!</button>
 </div>
-      <p class="muted">Tap to allow microphone access. This stays on your device.</p>
+      <p class="muted">Tap to allow microphone access. Your recording stays on your device unless you choose “Share This Story!”</p>
+      <div class="story-share-note">Sharing is optional. Shared stories can be played by other families using the app.</div>
       <audio id="player" controls style="width:100%; margin-top:10px; display:none"></audio>
     </section>
 
@@ -251,11 +272,49 @@ a.home-button {
         <p class="muted">Need a little nudge for how to wrap up? Tap for a general idea and find a way to end the story together!</p>
       </section>
     </div>
+
+    <section class="card story-gallery" aria-labelledby="storyGalleryHeading">
+      <h2 id="storyGalleryHeading">The Story Gallery</h2>
+      <p class="muted" style="margin-top:0">Stories shared by families playing Plot Twist.</p>
+      <div id="storyGalleryList" class="story-gallery-grid"></div>
+      <p id="storyGalleryEmpty" class="story-empty">No shared stories yet.</p>
+    </section>
   </div>
 
   <footer>
     © 2025 Mia Wisinski, Playful Heart Parenting. Thank you for supporting this work.
   </footer>
+
+
+<div id="storyShareModal" class="story-modal" aria-hidden="true">
+  <div class="story-modal-card">
+    <h3>Share Your Story</h3>
+    <p>Preview or change the title, then add who it’s by if you’d like.</p>
+    <div class="story-share-form">
+      <div>
+        <label for="storyShareTitle">Story title</label>
+        <input id="storyShareTitle" type="text" placeholder="Add a story title">
+      </div>
+      <div>
+        <label for="storyShareBy">Who is it by? <span style="font-weight:400">(optional)</span></label>
+        <input id="storyShareBy" type="text" placeholder="Example: The Smith Family">
+      </div>
+    </div>
+    <div class="btns" style="margin-top:14px">
+      <button class="secondary" id="storyShareCancel" type="button">Cancel</button>
+      <button id="storySharePublish" type="button">Share Story</button>
+    </div>
+  </div>
+</div>
+
+<div id="storyShareThanks" class="story-modal" aria-hidden="true">
+  <div class="story-modal-card" style="text-align:center">
+    <h3>Thanks for sharing your story!</h3>
+    <p>It’ll appear in the Story Gallery shortly.</p>
+    <button id="storyShareThanksClose" type="button">Got it!</button>
+  </div>
+</div>
+
 
   <script>
 
@@ -661,8 +720,18 @@ const recPause=document.getElementById('btnRecPause');   // NEW
 const recStop=document.getElementById('btnRecStop');
 const recPlay=document.getElementById('btnRecPlay');
 const recDl=document.getElementById('btnRecDownload');
+const recShare=document.getElementById('btnRecShare');
 const recStatus=document.getElementById('recStatus');
 const player=document.getElementById('player');
+const storyGalleryList=document.getElementById('storyGalleryList');
+const storyGalleryEmpty=document.getElementById('storyGalleryEmpty');
+const storyShareModal=document.getElementById('storyShareModal');
+const storyShareTitle=document.getElementById('storyShareTitle');
+const storyShareBy=document.getElementById('storyShareBy');
+const storyShareCancel=document.getElementById('storyShareCancel');
+const storySharePublish=document.getElementById('storySharePublish');
+const storyShareThanks=document.getElementById('storyShareThanks');
+const storyShareThanksClose=document.getElementById('storyShareThanksClose');
 
 
 /* ===================
@@ -838,7 +907,7 @@ renderDeck(deckWrap , wrapOut , btnWrapBack , btnWrapFwd , 'Tap the button below
 /* ===================
    Recorder (unchanged core, with minor robustness)
 =================== */
-let mediaRecorder=null, mediaStream=null, chunks=[], lastBlobUrl=null;
+let mediaRecorder=null, mediaStream=null, chunks=[], lastBlobUrl=null, lastStoryBlob=null, lastStoryMime='';
 
 function pickSupportedMime(){
   const list = [
@@ -865,6 +934,7 @@ if (!REC_CAN_PAUSE && recPause) { recPause.style.display = 'none'; }
 
 recStart.addEventListener('click', async ()=>{
   recStart.disabled = true; // prevent double-clicks immediately
+  recStatus.textContent = 'Requesting microphone access…';
   try{
     mediaStream = await navigator.mediaDevices.getUserMedia({
       audio:{ echoCancellation:true, noiseSuppression:true, autoGainControl:true },
@@ -898,6 +968,8 @@ recStart.addEventListener('click', async ()=>{
     mediaRecorder.onstop = () => {
       const type = mediaRecorder.mimeType || mime || "audio/webm";
       const blob = new Blob(chunks, { type });
+      lastStoryBlob = blob;
+      lastStoryMime = type;
 
       if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
       lastBlobUrl = URL.createObjectURL(blob);
@@ -906,7 +978,8 @@ recStart.addEventListener('click', async ()=>{
       player.style.display = 'block';
       recPlay.disabled = false;
       recDl.disabled = false;
-      recStatus.textContent = 'Recording ready to play or download';
+      recShare.disabled = false;
+      recStatus.textContent = 'Recording ready to play, download, or share';
 
       if (mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
 
@@ -936,6 +1009,7 @@ recStart.addEventListener('click', async ()=>{
 
     recPlay.disabled = true;
     recDl.disabled   = true;
+    recShare.disabled = true;
 
 }catch(err){
   recStatus.textContent='Microphone not available or permission denied.';
@@ -971,7 +1045,158 @@ recStop.addEventListener('click', ()=>{
   }
 });
 
+
 recPlay.addEventListener('click', ()=>{ if(player.src) player.play(); });
+
+/* ===================
+   Shared Story Gallery
+=================== */
+const STORY_GALLERY_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxVIq3FYs3F8luhCB3uhBinaQHKlbuw2Fy6YF2LXBrFpvcSQMXp7nbp8kX654K62-4jCg/exec';
+const STORY_CLOUD_NAME = 'douw0mebw';
+const STORY_UPLOAD_PRESET = 'stories';
+const STORY_THEME = 'Original Plot Twist';
+
+function currentStoryTitle(){
+  const i = deckTitle.current();
+  return i == null ? '' : deckTitle.items[i];
+}
+
+async function loadStoryGallery(){
+  if (!storyGalleryList || !storyGalleryEmpty) return;
+  try {
+    const res = await fetch(STORY_GALLERY_ENDPOINT);
+    const data = await res.json();
+    storyGalleryList.innerHTML = '';
+
+    if (!Array.isArray(data) || !data.length) {
+      storyGalleryEmpty.style.display = 'block';
+      return;
+    }
+
+    storyGalleryEmpty.style.display = 'none';
+
+    data.forEach(item => {
+      if (!item || !item.audioUrl) return;
+
+      const card = document.createElement('div');
+      card.className = 'story-card';
+
+      const title = document.createElement('div');
+      title.className = 'story-card-title';
+      title.textContent = item.title || 'Untitled Plot Twist Story';
+
+      const theme = document.createElement('div');
+      theme.className = 'story-card-theme';
+      theme.textContent = item.theme || 'Plot Twist';
+
+      const by = document.createElement('div');
+      by.className = 'story-byline';
+      by.textContent = item.by ? 'By ' + item.by : '';
+      if (!item.by) by.style.display = 'none';
+
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.preload = 'none';
+      audio.src = item.audioUrl;
+
+      card.append(title, theme, by, audio);
+      storyGalleryList.appendChild(card);
+    });
+  } catch (e) {
+    console.log('Story Gallery could not load:', e);
+    storyGalleryEmpty.textContent = 'Story Gallery could not load right now.';
+    storyGalleryEmpty.style.display = 'block';
+  }
+}
+
+async function uploadStoryBlob(blob, mime){
+  const form = new FormData();
+  form.append('file', blob, `plot-twist-story.${extFromMime(mime)}`);
+  form.append('upload_preset', STORY_UPLOAD_PRESET);
+  form.append('tags', 'plot-twist-story');
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${STORY_CLOUD_NAME}/video/upload`,
+    { method:'POST', body:form }
+  );
+  if (!res.ok) throw new Error(await res.text());
+  return await res.json();
+}
+
+recShare.addEventListener('click', ()=>{
+  if (!lastStoryBlob) {
+    recStatus.textContent = 'Record a story first, then you can share it.';
+    return;
+  }
+
+  storyShareTitle.value = currentStoryTitle() || '';
+  storyShareBy.value = '';
+  storyShareModal.classList.add('show');
+  storyShareModal.setAttribute('aria-hidden','false');
+});
+
+function closeStoryShareModal(){
+  storyShareModal.classList.remove('show');
+  storyShareModal.setAttribute('aria-hidden','true');
+}
+
+storyShareCancel.addEventListener('click', closeStoryShareModal);
+storyShareModal.addEventListener('click', e => {
+  if (e.target === storyShareModal) closeStoryShareModal();
+});
+
+storySharePublish.addEventListener('click', async ()=>{
+  const title = storyShareTitle.value.trim();
+  const by = storyShareBy.value.trim();
+
+  if (!title) {
+    storyShareTitle.focus();
+    return;
+  }
+
+  storySharePublish.disabled = true;
+  storySharePublish.textContent = 'Sharing…';
+  recStatus.textContent = 'Uploading your story…';
+
+  try {
+    const uploaded = await uploadStoryBlob(lastStoryBlob, lastStoryMime);
+    if (!uploaded || !uploaded.secure_url) throw new Error('No audio URL returned');
+
+    await fetch(STORY_GALLERY_ENDPOINT, {
+      method:'POST',
+      mode:'no-cors',
+      body:JSON.stringify({
+        title:title,
+        audioUrl:uploaded.secure_url,
+        theme:STORY_THEME,
+        by:by
+      })
+    });
+
+    closeStoryShareModal();
+    recStatus.textContent = 'Story shared! It’ll appear in the Story Gallery shortly.';
+    storyShareThanks.classList.add('show');
+    storyShareThanks.setAttribute('aria-hidden','false');
+    setTimeout(loadStoryGallery, 1800);
+  } catch (e) {
+    console.error('Story share failed:', e);
+    recStatus.textContent = 'Sorry, the story could not be shared. Your recording is still available to play or download.';
+  } finally {
+    storySharePublish.disabled = false;
+    storySharePublish.textContent = 'Share Story';
+  }
+});
+
+function closeStoryThanks(){
+  storyShareThanks.classList.remove('show');
+  storyShareThanks.setAttribute('aria-hidden','true');
+}
+storyShareThanksClose.addEventListener('click', closeStoryThanks);
+storyShareThanks.addEventListener('click', e => {
+  if (e.target === storyShareThanks) closeStoryThanks();
+});
+
+loadStoryGallery();
   </script>
   <script>
 if ('serviceWorker' in navigator) {
