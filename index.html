@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Plot Twist — Story Builder</title>
-  <meta name="theme-color" content="#1b3c4b" />
-<link rel="manifest" href="/plot-twist/manifest.webmanifest?v=4">
+<meta name="theme-color" content="#168c8c" />
+  <link rel="manifest" href="/plot-twist/manifest.webmanifest?v=4">
   <link rel="apple-touch-icon" href="/plot-twist/plot-twist-logo.png">
 
   <!-- Social share preview -->
@@ -18,70 +18,132 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">  
+<style>
 
-  <style>
-.circle-mode .home-button{
-  display:none !important;
+.circle-mode .home-button {
+  display: none !important;
 }
-    
+
 :root {
-  --bg: #fdf3de;
-  --ink: #213547;
-  --brand: #eb6e52;
-  --brand-dark: #ea694d;
-  --muted: #5a6b75;
-  --card: #ffffff;
-  --accent: #fef7e3;
-  --radius: 18px;
-  --shadow: 0 6px 24px rgba(0,0,0,.08);
+  --cream: #fff9f3;
+  --coral: #ef6b4f;
+  --teal: #168c8c;
+  --yellow: #f6b83f;
+  --ink: #3c3c3c;
+  --muted: #6b7f88;
+  --white: #ffffff;
+
+  --soft-coral: #f8c2b5;
+  --soft-yellow: #f8df9a;
+  --soft-teal: #b9deda;
+
+  --radius: 22px;
+  --shadow: 0 8px 24px rgba(0, 0, 0, .08);
+
+  /* Keep compatibility with existing Plot Twist styles */
+  --bg: var(--cream);
+  --brand: var(--coral);
+  --brand-dark: var(--coral);
+  --card: var(--white);
+  --accent: var(--soft-yellow);
 }
 
-* { box-sizing: border-box; }
+/* ---------- Base ---------- */
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: var(--bg);
+  background: var(--cream);
   color: var(--ink);
   line-height: 1.5;
 }
-.container { max-width: 960px; margin: 0 auto; padding: 20px 16px 64px; }
-header { display: grid; gap: 8px; justify-items: center; margin: 8px 0 16px; text-align: center; }
-.logo { height: 70px; width: auto; }
-.instructions { background: var(--card); padding: 18px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: left; }
-.instructions h2 { margin-top: 0; color: var(--brand-dark); }
-.grid { display: grid; gap: 16px; margin-top: 20px; }
-@media (min-width: 860px){ .grid { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 1100px){ .grid { grid-template-columns: 1fr 1fr 1fr; } }
-.card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
-.card h2 { margin: 0 0 10px; font-size: 16px; color: var(--brand-dark); }
-.out { background: #fff; border: 2px dashed #d7e3e8; border-radius: var(--radius); padding: 14px; min-height: 60px; display: flex; align-items: center; font-weight: 600; }
-.btns { display: flex; gap: 10px; flex-wrap: wrap; }
-button { appearance: none; border: 0; padding: 12px 14px; border-radius: 14px; font-weight: 700; cursor: pointer; background: var(--brand); color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.08); letter-spacing: .2px; }
-button.secondary { background: #edf6f9; color: var(--brand-dark); font-weight: 600; }
-.muted { color: var(--muted); font-size: 13px; }
-footer { text-align:center; font-size:12px; color:#666; margin: 24px 0 40px; padding: 0 16px; }
 
+.container {
+  width: min(100% - 32px, 860px);
+  margin: 0 auto;
+  padding: 24px 0 64px;
+}
 
-    /* Back to Hub button */
+/* ---------- Back to Hub ---------- */
+
 a.home-button {
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  background: rgba(0, 0, 0, 0.75);
-  color: #ffffff;
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-size: 14px;
+  display: inline-block;
+  position: static;
+  margin: 0 0 22px;
+  padding: 9px 14px;
+  border-radius: 12px;
+  background: var(--teal);
+  color: #fff;
+  font-size: .85rem;
   font-weight: 600;
   text-decoration: none;
-  z-index: 10002;
+  box-shadow: none;
 }
+
+/* ---------- Header / Logo ---------- */
+
+header {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  margin: 0 0 24px;
+}
+
+.logo {
+  width: 170px;
+  height: auto;
+  max-width: 45vw;
+  display: block;
+}
+
+/* ---------- General cards ---------- */
+
+.card,
+.instructions,
+.story-gallery {
+  background: var(--white);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+
+.card h2,
+.instructions h2,
+.story-gallery h2 {
+  margin: 0 0 12px;
+  color: var(--teal);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: .85rem;
+}
+
+/* ---------- Instructions ---------- */
+
+.instructions {
+  margin-bottom: 20px;
+}
+
+.instructions > h2 {
+  text-align: center;
+  font-size: 1.3rem;
+  color: var(--teal);
+}
+
 .instruction-section {
-  border: 1px solid #efd8cb;
-  border-radius: 14px;
-  background: #fffaf3;
-  margin-top: 14px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--cream);
+  margin-top: 12px;
   overflow: hidden;
 }
 
@@ -90,7 +152,7 @@ a.home-button {
   cursor: pointer;
   padding: 14px 16px;
   font-weight: 700;
-  color: var(--brand-dark);
+  color: var(--teal);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -127,36 +189,468 @@ a.home-button {
   margin-bottom: 12px;
 }
 
-/* ---------- Shared Story Gallery ---------- */
-.story-gallery{margin-top:20px}
-.story-gallery-grid{display:grid;gap:10px;margin-top:12px}
-.story-card{background:#fffaf3;border:1px solid #efd8cb;border-radius:14px;padding:12px;text-align:left}
-.story-card-title{font-weight:700;margin-bottom:2px}
-.story-card-theme,.story-byline{color:var(--muted);font-size:12px;margin-bottom:8px}
-.story-card audio{width:100%}
-.story-empty{color:var(--muted);font-size:13px}
-.story-share-note{margin-top:10px;padding:10px 12px;border-radius:12px;background:#fffaf3;color:var(--muted);font-size:13px}
-.story-share-form{display:grid;gap:10px;margin-top:12px;text-align:left}
-.story-share-form label{display:block;font-weight:700;color:#53322b;font-size:.9rem;margin-bottom:4px}
-.story-share-form input{width:100%;padding:.8rem .9rem;border-radius:12px;border:2px dashed #f8b934;font-family:inherit;font-size:.95rem}
-.story-modal{position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:center;justify-content:center;padding:20px;z-index:25000}
-.story-modal.show{display:flex}
-.story-modal-card{max-width:440px;width:100%;background:#fff;border-radius:18px;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.24)}
-.story-modal-card h3{margin:0 0 8px;color:var(--brand-dark);text-align:center}
-.story-modal-card>p{color:var(--muted);margin:0 0 14px;text-align:center}
+/* ---------- Recorder ---------- */
 
-  </style>
+.recorder-card {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.recorder-card #recHeading {
+  color: var(--coral);
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+}
+
+.recorder-intro {
+  max-width: 620px;
+  margin: 0 auto 16px;
+  color: var(--muted);
+  font-size: .95rem;
+}
+
+#recStatus {
+  background: var(--soft-coral);
+  border: 0;
+  border-radius: 18px;
+  min-height: 70px;
+  padding: 16px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.recorder-buttons {
+  justify-content: center;
+  margin-top: 12px;
+}
+
+#player {
+  width: 100%;
+  margin-top: 12px;
+  display: none;
+  border-radius: 14px;
+}
+
+
+/* ---------- Generator layout ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.generator-card {
+  padding: 22px;
+  text-align: center;
+}
+
+.generator-card h2 {
+  margin: 0 0 12px;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.generator-card .out {
+  border: 0;
+  border-radius: 20px;
+  padding: 22px;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.generator-main {
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.generator-nav {
+  margin-top: 10px;
+}
+
+.generator-nav button {
+  flex: 1;
+}
+
+.reset-button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.generator-card > .muted {
+  margin: 14px auto 0;
+  max-width: 650px;
+}
+
+
+/* STORY TITLE */
+
+.title-generator {
+  background: var(--soft-teal);
+}
+
+#titleHeading {
+  color: var(--teal);
+}
+
+#titleOut {
+  background: var(--teal);
+  color: var(--cream);
+}
+
+
+/* PLOT TWIST */
+
+.twist-generator {
+  background: var(--soft-coral);
+}
+
+#twistHeading {
+  color: var(--coral);
+}
+
+#twistOut {
+  background: var(--coral);
+  color: var(--cream);
+}
+
+
+/* WRAP IT UP */
+
+.wrap-generator {
+  background: var(--soft-yellow);
+}
+
+#wrapHeading {
+  color: #8a5b00;
+}
+
+#wrapOut {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+/* ---------- Buttons ---------- */
+
+.btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+button {
+  appearance: none;
+  border: 0;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--coral);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+  letter-spacing: .1px;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  opacity: .45;
+  cursor: default;
+  transform: none;
+}
+
+button.secondary {
+  background: var(--soft-yellow);
+  color: var(--ink);
+}
+  /* Generator navigation buttons */
+
+.title-generator .generator-nav button {
+  background: var(--teal);
+  color: #fff;
+}
+
+.title-generator .reset-button {
+  background: var(--soft-teal);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--teal);
+}
+
+.twist-generator .generator-nav button {
+  background: var(--coral);
+  color: #fff;
+}
+
+.wrap-generator .generator-nav button {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+/* Title primary action */
+
+#btnTitle {
+  background: var(--teal);
+  color: #fff;
+}
+
+/* Plot Twist primary action */
+
+#btnTwist {
+  background: var(--coral);
+  color: #fff;
+}
+
+/* Wrap primary action */
+
+#btnWrap {
+  background: var(--yellow);
+  color: var(--ink);
+  font-weight: 800;
+}
+
+/* Recorder primary actions */
+
+#btnRecStart {
+  background: var(--coral);
+}
+
+#btnRecShare {
+  background: var(--teal);
+}
+
+/* ---------- Story Gallery ---------- */
+
+.story-gallery {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.story-gallery h2 {
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+  color: var(--teal);
+}
+
+.story-gallery-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.story-card {
+  background: var(--cream);
+  border: 0;
+  border-radius: 16px;
+  padding: 14px;
+  text-align: left;
+}
+
+.story-card-title {
+  font-weight: 700;
+  margin-bottom: 2px;
+  color: var(--ink);
+}
+
+.story-card-theme,
+.story-byline {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.story-card audio {
+  width: 100%;
+}
+
+.story-empty {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.story-share-note {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--soft-teal);
+  color: var(--ink);
+  font-size: 13px;
+}
+
+/* ---------- Share modal ---------- */
+
+.story-share-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  text-align: left;
+}
+
+.story-share-form label {
+  display: block;
+  font-weight: 700;
+  color: var(--ink);
+  font-size: .9rem;
+  margin-bottom: 4px;
+}
+
+.story-share-form input {
+  width: 100%;
+  padding: .8rem .9rem;
+  border-radius: 12px;
+  border: 2px solid var(--yellow);
+  font-family: inherit;
+  font-size: .95rem;
+}
+
+.story-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .48);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 25000;
+}
+
+.story-modal.show {
+  display: flex;
+}
+
+.story-modal-card {
+  max-width: 440px;
+  width: 100%;
+  background: var(--white);
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .24);
+}
+
+.story-modal-card h3 {
+  margin: 0 0 8px;
+  color: var(--teal);
+  text-align: center;
+}
+
+.story-modal-card > p {
+  color: var(--muted);
+  margin: 0 0 14px;
+  text-align: center;
+}
+
+/* ---------- Print & Play ---------- */
+
+.print-deck {
+  margin: 20px 0 0;
+  padding: 22px;
+  background: var(--white);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.print-deck h2 {
+  margin: 0 0 8px;
+  color: var(--teal);
+font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.print-deck p {
+  margin: 8px 0 14px;
+}
+
+.print-button {
+  display: inline-block;
+  padding: 12px 16px;
+  background: var(--teal);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+}
+
+.print-button:hover {
+  transform: translateY(-1px);
+}
+
+/* ---------- Footer ---------- */
+
+footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 28px 0 40px;
+  padding: 0 16px;
+}
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 600px) {
+
+  .container {
+    width: min(100% - 24px, 860px);
+    padding-top: 16px;
+  }
+
+  .logo {
+    width: 155px;
+    max-width: 48vw;
+  }
+
+.card,
+.instructions,
+.story-gallery,
+.print-deck {
+  padding: 18px;
+  border-radius: 20px;
+}
+
+    .generator-card .out {
+    min-height: 120px;
+    padding: 18px;
+    font-size: 1rem;
+  }
+
+  .btns {
+    gap: 8px;
+  }
+
+  button {
+    flex: 1 1 auto;
+  }
+
+}
+
+</style>
 </head>
 <body>
-  <a href="https://miawizz.github.io/php-app-hub/" class="home-button">
-  ← Back to Hub
-</a>
-
-
-
-
 
   <div class="container" id="appRoot">
+
+    <a href="https://miawizz.github.io/php-app-hub/" class="home-button">
+      Back to Hub
+    </a>
+
     <header>
       <img src="plot-twist-logo.png" alt="Plot Twist logo" class="logo" />
     </header>
@@ -221,57 +715,101 @@ a.home-button {
   </details>
 </div>
 
-    <section class="card" aria-labelledby="recHeading" style="margin-top:16px">
-      <h2 id="recHeading">Record Your Story!</h2>
-      <div class="out" id="recStatus" aria-live="polite">Ready to record. Your audio stays on your device.</div>
-<div class="btns" style="margin-top:10px">
-  <button id="btnRecStart">Start recording</button>
-  <button class="secondary" id="btnRecPause" disabled>Pause</button>
-  <button class="secondary" id="btnRecStop" disabled>Stop</button>
-  <button class="secondary" id="btnRecPlay" disabled>Play</button>
-  <button class="secondary" id="btnRecDownload" disabled>Download</button>
-  <button id="btnRecShare" disabled>Share This Story!</button>
-</div>
-      <p class="muted">Tap to allow microphone access. Your recording stays on your device unless you choose “Share This Story!”</p>
-      <div class="story-share-note">Sharing is optional. Shared stories can be played by other families using the app.</div>
-      <audio id="player" controls style="width:100%; margin-top:10px; display:none"></audio>
-    </section>
+<section class="card recorder-card" aria-labelledby="recHeading">
+  <h2 id="recHeading">RECORD YOUR STORY!</h2>
 
-    <div class="grid">
-      <section class="card" aria-labelledby="titleHeading">
-        <h2 id="titleHeading">STORY TITLE...</h2>
-        <div class="out" id="titleOut" aria-live="polite">Tap the button below to get a title</div>
-        <div class="btns" style="margin-top:10px">
-          <button id="btnTitle">GET A TITLE!</button>
-          <button class="secondary" id="btnTitleBack">Back</button>
-          <button class="secondary" id="btnTitleFwd">Forward</button>
-          <button class="secondary" id="btnReset">Reset</button>
-        </div>
-        <p class="muted">Here's a title suggestion to inspire the beginning of your story. Need a way to start? Try "Once Upon a Time..." or "Long ago and far away, there lived a..." — you can’t go wrong with the classics.</p>
-      </section>
+  <p class="recorder-intro">
+    Record your story as you create it, then play it back, download it, or share it with other families.
+  </p>
 
-      <section class="card" aria-labelledby="twistHeading">
-        <h2 id="twistHeading">READY FOR A PLOT TWIST..?</h2>
-        <div class="out" id="twistOut" aria-live="polite">Tap the button below for a new idea</div>
-        <div class="btns" style="margin-top:10px">
-          <button id="btnTwist">PLOT TWIST!</button>
-          <button class="secondary" id="btnTwistBack">Back</button>
-          <button class="secondary" id="btnTwistFwd">Forward</button>
-        </div>
-        <p class="muted">Tap the Plot Twist button any time you want some inspiration!</p>
-      </section>
+  <div class="out" id="recStatus" aria-live="polite">
+    Ready to record. Your audio stays on your device.
+  </div>
 
-      <section class="card" aria-labelledby="wrapHeading">
-        <h2 id="wrapHeading">READY TO WRAP IT UP...?</h2>
-        <div class="out" id="wrapOut" aria-live="polite">Tap the button below for a tip on how to end your story</div>
-        <div class="btns" style="margin-top:10px">
-          <button class="secondary" id="btnWrap">IDEAS FOR HOW TO END...</button>
-          <button class="secondary" id="btnWrapBack">Back</button>
-          <button class="secondary" id="btnWrapFwd">Forward</button>
-        </div>
-        <p class="muted">Need a little nudge for how to wrap up? Tap for a general idea and find a way to end the story together!</p>
-      </section>
+  <div class="btns recorder-buttons">
+    <button id="btnRecStart">Start Recording</button>
+    <button class="secondary" id="btnRecPause" disabled>Pause</button>
+    <button class="secondary" id="btnRecStop" disabled>Stop</button>
+    <button class="secondary" id="btnRecPlay" disabled>Play</button>
+    <button class="secondary" id="btnRecDownload" disabled>Download</button>
+    <button id="btnRecShare" disabled>Share This Story!</button>
+  </div>
+
+  <p class="muted">
+    Tap Start Recording to allow microphone access. Your recording stays on your device unless you choose “Share This Story!”
+  </p>
+
+  <div class="story-share-note">
+    Sharing is optional. Shared stories can be played by other families using the app.
+  </div>
+
+  <audio id="player" controls></audio>
+</section>
+
+<div class="grid">
+
+  <section class="card generator-card title-generator" aria-labelledby="titleHeading">
+    <h2 id="titleHeading">STORY TITLE...</h2>
+
+    <div class="out" id="titleOut" aria-live="polite">
+      Tap the button below to get a title
     </div>
+
+    <button id="btnTitle" class="generator-main">GET A TITLE!</button>
+
+    <div class="btns generator-nav">
+      <button class="secondary" id="btnTitleBack">Back</button>
+      <button class="secondary" id="btnTitleFwd">Forward</button>
+    </div>
+
+    <button class="secondary reset-button" id="btnReset">Reset</button>
+
+    <p class="muted">
+      Here's a title suggestion to inspire the beginning of your story. Need a way to start? Try "Once Upon a Time..." or "Long ago and far away, there lived a..." — you can’t go wrong with the classics.
+    </p>
+  </section>
+
+
+  <section class="card generator-card twist-generator" aria-labelledby="twistHeading">
+    <h2 id="twistHeading">READY FOR A PLOT TWIST..?</h2>
+
+    <div class="out" id="twistOut" aria-live="polite">
+      Tap the button below for a new idea
+    </div>
+
+    <button id="btnTwist" class="generator-main">PLOT TWIST!</button>
+
+    <div class="btns generator-nav">
+      <button class="secondary" id="btnTwistBack">Back</button>
+      <button class="secondary" id="btnTwistFwd">Forward</button>
+    </div>
+
+    <p class="muted">
+      Tap the Plot Twist button any time you want some inspiration!
+    </p>
+  </section>
+
+
+  <section class="card generator-card wrap-generator" aria-labelledby="wrapHeading">
+    <h2 id="wrapHeading">READY TO WRAP IT UP...?</h2>
+
+    <div class="out" id="wrapOut" aria-live="polite">
+      Tap the button below for a tip on how to end your story
+    </div>
+
+    <button id="btnWrap" class="generator-main">IDEAS FOR HOW TO END...</button>
+
+    <div class="btns generator-nav">
+      <button class="secondary" id="btnWrapBack">Back</button>
+      <button class="secondary" id="btnWrapFwd">Forward</button>
+    </div>
+
+    <p class="muted">
+      Need a little nudge for how to wrap up? Tap for a general idea and find a way to end the story together!
+    </p>
+  </section>
+
+</div>
 
     <section class="card story-gallery" aria-labelledby="storyGalleryHeading">
       <h2 id="storyGalleryHeading">The Story Gallery</h2>
@@ -279,11 +817,33 @@ a.home-button {
       <div id="storyGalleryList" class="story-gallery-grid"></div>
       <p id="storyGalleryEmpty" class="story-empty">No shared stories yet.</p>
     </section>
-  </div>
+
+<div class="print-deck">
+  <h2>PRINT & PLAY</h2>
+
+  <p>
+    Prefer screen-free play?
+  </p>
+
+  <a
+    href="plot-twist-deck.pdf"
+    target="_blank"
+    class="print-button"
+  >
+    Download the Plot Twist – Print & Play Starter Deck
+  </a>
+
+  <p class="muted">
+    Includes 53 favorite prompts from the app. Just print, cut, and play!<br>
+    <em>Tip: If you’re viewing in the app, press and hold this button, copy the link, then open it in your browser to download/print.</em>
+  </p>
+</div>
 
   <footer>
-    © 2025 Mia Wisinski, Playful Heart Parenting. Thank you for supporting this work.
+    © 2026 Mia Wisinski, Playful Heart Parenting. Thank you for supporting this work.
   </footer>
+      </div>
+
 
 
 <div id="storyShareModal" class="story-modal" aria-hidden="true">
@@ -1209,22 +1769,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-   <div class="print-deck" style="margin:2rem 0; text-align:center;">
-  <hr style="margin-bottom:1rem;">
-  <p style="font-family:Poppins, sans-serif; font-size:1rem; color:#18323b;">
-    Prefer screen-free play?
-  </p>
-  <a href="plot-twist-deck.pdf" target="_blank" 
-     style="display:inline-block; padding:.75rem 1.25rem; 
-            background:#127490; color:white; font-weight:600; 
-            text-decoration:none; border-radius:8px;">
-    Download the Plot Twist – Print & Play Starter Deck
-  </a>
-  <p style="font-size:.85rem; color:#555; margin-top:.5rem;">
-    Includes 53 favorite prompts from the app. Just print, cut, and play!<br>
-      <em>Tip: If you’re viewing in the app, press and hold this button, copy the link, then open it in your browser to download/print.</em>
-  </p>
-</div>
+
 <script>
 (function () {
   const isCircle =
